@@ -2,6 +2,7 @@ from typing import List, Dict
 import torch
 import numpy as np
 import logging
+import time
 
 logger = logging.getLogger("__name__")
 level = logging.INFO
@@ -81,3 +82,20 @@ class EarlyStopping:
             )
         torch.save(model.state_dict(), f"{path}/checkpoint.pth")
         self.val_loss_min = val_loss
+
+
+def log_train_progress(args, time_now, loss, epoch, train_steps, i, iter_count) -> None:
+    logger.info(
+        "\titers: {0}, epoch: {1} | loss: {2:.7f}".format(i + 1, epoch + 1, loss.item())
+    )
+    speed = (time.time() - time_now) / iter_count
+    left_time = speed * ((args.train_epochs - epoch) * train_steps - i)
+    logger.info("\tspeed: {:.4f}s/iter; left time: {:.4f}s".format(speed, left_time))
+
+
+def log_train_epoch(epoch, train_steps, train_loss, vali_loss) -> None:
+    logger.info(
+        "Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f}".format(
+            epoch + 1, train_steps, train_loss, vali_loss
+        )
+    )

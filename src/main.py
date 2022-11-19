@@ -4,7 +4,7 @@ from torchvision.utils import draw_bounding_boxes
 from torchvision.transforms.functional import to_pil_image
 from torch.utils.data import DataLoader
 from data_factory.data_factoy import SordiAiDataset
-from config import config
+from utils.config import config
 from network.pretrained import create_model, weights  # , model
 from typing import Dict, List
 

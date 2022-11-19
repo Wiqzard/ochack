@@ -12,7 +12,7 @@ python -u run.py \
   --batch_size 3 \
   --num_workers 0 \
   --itr 1 \
-  --train_epochs 20 \
+  --train_epochs 2 \
   --patience 7 \
   --learning_rate 0.0001 \
   --des 'Exp' \

@@ -1,7 +1,14 @@
 from data_provider.data_factoy import SordiAiDataset
 from network.pretrained import create_model
 from exp.exp_basic import Exp_Basic
-from utils.tools import transform_label, adjust_learning_rate, EarlyStopping, logger
+from utils.tools import (
+    transform_label,
+    adjust_learning_rate,
+    EarlyStopping,
+    logger,
+    log_train_progress,
+    log_train_epoch,
+)
 from utils.constants import CLASSES
 
 # from utils.tools import EarlyStopping, adjust_learning_rate
@@ -83,14 +90,20 @@ class Exp_Main(Exp_Basic):
         self.model.train()
         return total_loss
 
-    def train(self, setting):
-        train_data, train_loader = self._get_data(flag="train")
-        validation_data, validation_loader = self._get_data(flag="test")
-
+    def _set_checkpoint(self, setting) -> str:
         path = os.path.join(self.args.checkpoints, setting)
         if not os.path.exists(path):
             os.makedirs(path)
+        return path
 
+    def train(self, setting):  # sourcery skip: low-code-quality
+        train_data, train_loader = self._get_data(flag="train")
+        validation_data, validation_loader = self._get_data(flag="test")
+
+        # path = os.path.join(self.args.checkpoints, setting)
+        # if not os.path.exists(path):
+        #    os.makedirs(path)
+        path = self._set_checkpoint(setting=setting)
         time_now = time.time()
 
         train_steps = len(train_loader)
@@ -118,20 +131,28 @@ class Exp_Main(Exp_Basic):
                 train_loss.append(loss.item())
 
                 if (i + 1) % 100 == 0:
-                    logger.info(
-                        "\titers: {0}, epoch: {1} | loss: {2:.7f}".format(
-                            i + 1, epoch + 1, loss.item()
-                        )
+                    log_train_progress(
+                        args=self.args,
+                        time_now=time_now,
+                        loss=loss,
+                        train_steps=train_steps,
+                        i=i,
+                        iter_count=iter_count,
                     )
-                    speed = (time.time() - time_now) / iter_count
-                    left_time = speed * (
-                        (self.args.train_epochs - epoch) * train_steps - i
-                    )
-                    logger.info(
-                        "\tspeed: {:.4f}s/iter; left time: {:.4f}s".format(
-                            speed, left_time
-                        )
-                    )
+                    # logger.info(
+                    #    "\titers: {0}, epoch: {1} | loss: {2:.7f}".format(
+                    #        i + 1, epoch + 1, loss.item()
+                    #    )
+                    # )
+                    # speed = (time.time() - time_now) / iter_count
+                    # left_time = speed * (
+                    #    (self.args.train_epochs - epoch) * train_steps - i
+                    # )
+                    # logger.info(
+                    #    "\tspeed: {:.4f}s/iter; left time: {:.4f}s".format(
+                    #        speed, left_time
+                    #    )
+                    # )
                     iter_count = 0
                     time_now = time.time()
 
@@ -146,19 +167,19 @@ class Exp_Main(Exp_Basic):
             logger.info(f"Epoch: {epoch + 1} cost time: {time.time() - epoch_time}")
             train_loss = np.average(train_loss)
             vali_loss = self.validation(validation_loader=validation_loader)
-
-            logger.info(
-                "Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f}".format(
-                    epoch + 1, train_steps, train_loss, vali_loss
-                )
-            )
+            log_train_epoch(epoch=epoch, train_steps=train_steps, vali_loss=vali_loss)
+            # logger.info(
+            #    "Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f}".format(
+            #        epoch + 1, train_steps, train_loss, vali_loss
+            #    )
+            # )
             early_stopping(vali_loss, self.model, path)
             if early_stopping.early_stop:
-                print("Early stopping")
+                logger.info("Early stopping")
                 break
 
             adjust_learning_rate(model_optim, epoch + 1, self.args)
-
+            break
         best_model_path = f"{path}/checkpoint.pth"
         self.model.load_state_dict(torch.load(best_model_path))
 

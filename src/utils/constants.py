@@ -13,7 +13,7 @@ CLASSES = {
     "dolly": 11,
     "exit_sign": 12,
     "fire_extinguisher": 13,
-    "spring_post ": 14,
+    "spring_post": 14,
     "locker": 15,
     "cabinet": 16,
     "cardboard_box": 17,

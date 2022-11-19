@@ -114,7 +114,7 @@ def main():
                 exp.predict(setting, True)
 
         ii = 0
-        setting = f"{args.model_id}_{args.model}_{args.data}_ft{args.features}_sl{args.seq_len}_ll{args.label_len}_pl{args.pred_len}_dm{args.d_model}_nh{args.n_heads}_el{args.e_layers}_dl{args.d_layers}_df{args.d_ff}_fc{args.factor}_eb{args.embed}_dt{args.distil}_{args.des}_{ii}"
+        setting = f"{args.model_id}_{args.model}_{args.data}_{args.des}_{ii}"
 
         exp = Exp(args)  # set experiments
         logger.info(f">>>>>>>testing : {setting}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
