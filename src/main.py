@@ -26,9 +26,9 @@ train_dataloder = DataLoader(
     num_workers=config["num_workers"],
     drop_last=config["drop_last"],
 )
-print(train_dataset[0])
-print(test_dataset[0])
-print(eval_dataset[0])
+# print(train_dataset[0])
+# print(test_dataset[0])
+# print(eval_dataset[0])
 
 
 def transform_label(
