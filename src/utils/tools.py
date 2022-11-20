@@ -33,6 +33,12 @@ def train_test_split(
 #     return test_dataset
 # else:
 #     raise NameError
+class dotdict(dict):
+    """dot.notation access to dictionary attributes"""
+
+    __getattr__ = dict.get
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
 
 
 def transform_label(
