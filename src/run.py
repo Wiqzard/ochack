@@ -43,6 +43,9 @@ def main():
         "--data_path", type=str, default="SORDI_2022_Single_Assets", help="data file"
     )
     parser.add_argument(
+        "--ratio", type=float, default=0.8, help="train-test split ratio"
+    )
+    parser.add_argument(
         "--checkpoints",
         type=str,
         default="./checkpoints/",

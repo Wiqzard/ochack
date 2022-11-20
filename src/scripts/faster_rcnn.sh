@@ -7,6 +7,7 @@ python -u run.py \
   --model Faster_RCNN\
   --data custom \
   --root_path ./data/ \
+  --ratio 0.8 \
   --data_path SORDI_2022_Single_Assets \
   --checkpoints ./checkpoints/ \
   --batch_size 3 \

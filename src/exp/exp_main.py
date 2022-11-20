@@ -62,7 +62,9 @@ class Exp_Main(Exp_Basic):
                 transforms=preprocess,
                 flag=flag,
             )
-            train_dataset, test_dataset = train_test_split(full_dataset, flag)
+            train_dataset, test_dataset = train_test_split(
+                full_dataset, args.ratio, flag
+            )
             data_set = train_dataset if flag == "train" else test_dataset
         data_loader = DataLoader(
             data_set,
