@@ -77,7 +77,11 @@ class SordiAiDataset(ImageDataset):
     def _make_dataset(self) -> List[Tuple[str, str]]:
         instances = []
         for directory in os.listdir(self.DIRECTORY):
-            if directory.startswith(".") or directory.endswith("json"):
+            if (
+                directory.startswith(".")
+                or directory.endswith("json")
+                or directory.endswith("zip")
+            ):
                 continue
             directory = os.fsdecode(directory)
             # images, labels
