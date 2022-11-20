@@ -1,8 +1,12 @@
-from typing import List, Dict
-import torch
+from typing import List, Dict, Tuple, Optional
 import numpy as np
 import logging
 import time
+import torch
+from torchvision.utils import draw_bounding_boxes
+from torchvision.transforms.functional import to_pil_image
+
+from data_provider.data_factoy import SordiAiDataset
 
 logger = logging.getLogger("__name__")
 level = logging.INFO
@@ -10,6 +14,17 @@ logger.setLevel(level)
 ch = logging.StreamHandler()
 ch.setLevel(level)
 logger.addHandler(ch)
+
+
+def train_test_split(
+    dataset: SordiAiDataset, ratio: float = 0.8
+) -> Tuple[SordiAiDataset, SordiAiDataset]:
+    train_size = int(ratio * len(dataset))
+    test_size = len(dataset) - train_size
+    train_dataset, test_dataset = torch.utils.data.random_split(
+        dataset, [train_size, test_size]
+    )
+    return train_dataset, test_dataset
 
 
 def transform_label(
@@ -101,20 +116,21 @@ def log_train_epoch(epoch, train_steps, train_loss, vali_loss) -> None:
     )
 
 
-def show_prediction(index: int) -> None:
-    model.eval()
-    image, _ = train_dataset[index]
-    img = train_dataset.get_raw_image(index)
-    prediction = model(image.unsqueeze(0))[0]
-    print(prediction)
-    labels = [weights.meta["categories"][i] for i in prediction["labels"]]
-    box = draw_bounding_boxes(
-        img,
-        boxes=prediction["boxes"],
-        labels=labels,
-        colors="red",
-        width=4,
-        font_size=30,
-    )
-    im = to_pil_image(box.detach())
-    im.show()
+# def show_prediction(image, index: int, dataset: Optional) -> None:
+#    model.eval()
+#    image, _ = train_dataset[index]
+#    img = train_dataset.get_raw_image(index)
+#    prediction = model(image.unsqueeze(0))[0]
+#    print(prediction)
+#    labels = [weights.meta["categories"][i] for i in prediction["labels"]]
+#    box = draw_bounding_boxes(
+#        img,
+#        boxes=prediction["boxes"],
+#        labels=labels,
+#        colors="red",
+#        width=4,
+#        font_size=30,
+#    )
+#    im = to_pil_image(box.detach())
+#    im.show()
+#

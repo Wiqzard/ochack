@@ -7,7 +7,7 @@ from utils.config import config
 from network.pretrained import create_model, weights  # , model
 from typing import Dict, List
 
-from utils.tools import transform_label
+from utils.tools import transform_label, train_test_split
 from utils.constants import CLASSES
 from exp.exp_main import Exp_Main
 
@@ -15,7 +15,9 @@ from exp.exp_main import Exp_Main
 model, weights = create_model(len(CLASSES))
 
 preprocess = weights.transforms()
-train_dataset = SordiAiDataset(root_path="./data/", transforms=preprocess)
+
+full_dataset = SordiAiDataset(root_path="./data/", transforms=preprocess)
+train_dataset, test_dataset = train_test_split(full_dataset)
 eval_dataset = SordiAiDatasetEval(root_path="./data/", transforms=preprocess)
 train_dataloder = DataLoader(
     train_dataset,
@@ -25,6 +27,7 @@ train_dataloder = DataLoader(
     drop_last=config["drop_last"],
 )
 print(train_dataset[0])
+print(test_dataset[0])
 print(eval_dataset[0])
 
 
