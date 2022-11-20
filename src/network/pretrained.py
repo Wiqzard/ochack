@@ -16,7 +16,7 @@ model = fasterrcnn_resnet50_fpn_v2(weights=weights, box_score_thresh=0.9)
 
 def create_model(num_classes: int):
     weights = FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT
-    model = fasterrcnn_resnet50_fpn_v2(weights=weights, box_score_thresh=0.9)
+    model = fasterrcnn_resnet50_fpn_v2(weights=weights, box_score_thresh=0.95)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
     return model, weights

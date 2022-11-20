@@ -124,6 +124,5 @@ class SordiAiDataset(ImageDataset):
         image = self.image_loader(path_image)
         label = self.json_loader(path_label)
         image = self.transforms(image) if self.transforms else image
-        # print(image.shape)
 
         return image, label[0]

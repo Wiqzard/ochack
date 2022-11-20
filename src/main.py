@@ -1,6 +1,5 @@
 import torch
-from torchvision.utils import draw_bounding_boxes
-from torchvision.transforms.functional import to_pil_image
+
 from torch.utils.data import DataLoader
 from data_provider.data_factoy import SordiAiDataset, SordiAiDatasetEval
 from utils.config import config
@@ -17,9 +16,8 @@ model, weights = create_model(len(CLASSES))
 preprocess = weights.transforms()
 
 full_dataset = SordiAiDataset(root_path="./data/", transforms=preprocess)
-train_dataset, test_dataset = train_test_split(full_dataset, "train"), train_test_split(
-    full_dataset, "test"
-)
+train_dataset, test_dataset = train_test_split(full_dataset, 0.8, "train")
+
 eval_dataset = SordiAiDatasetEval(root_path="./data/", transforms=preprocess)
 train_dataloder = DataLoader(
     train_dataset,

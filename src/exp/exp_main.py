@@ -8,9 +8,10 @@ from utils.tools import (
     logger,
     log_train_progress,
     log_train_epoch,
-    train_test_split
+    train_test_split,
 )
 from utils.constants import CLASSES
+
 # from utils.tools import EarlyStopping, adjust_learning_rate
 # from utils.metrics import metric
 from typing import Tuple, Optional, List, Union
@@ -35,7 +36,9 @@ class Exp_Main(Exp_Basic):
         model = model.float().to(self.device)
         return model
 
-    def _get_data(self, flag: str = "train") -> Tuple[Union[SordiAiDataset, SordiAiDatasetEval],DataLoader]:
+    def _get_data(
+        self, flag: str = "train"
+    ) -> Tuple[Union[SordiAiDataset, SordiAiDatasetEval], DataLoader]:
         args = self.args
         preprocess = self.weights.transforms()
         if flag == "eval":
@@ -43,10 +46,10 @@ class Exp_Main(Exp_Basic):
             drop_last = False
             batch_size = 1
             data_set = SordiAiDatasetEval(
-            root_path=args.root_path,
-            data_path=args.data_path,
-            transforms=preprocess,
-            flag=flag,
+                root_path=args.root_path,
+                data_path=args.data_path,
+                transforms=preprocess,
+                flag=flag,
             )
         else:
             shuffle_flag = True
@@ -54,13 +57,13 @@ class Exp_Main(Exp_Basic):
             batch_size = args.batch_size
 
             full_dataset = SordiAiDataset(
-            root_path=args.root_path,
-            data_path=args.data_path,
-            transforms=preprocess,
-            flag=flag,
+                root_path=args.root_path,
+                data_path=args.data_path,
+                transforms=preprocess,
+                flag=flag,
             )
-            data_set = train_test_split(full_dataset, flag) 
-
+            train_dataset, test_dataset = train_test_split(full_dataset, flag)
+            data_set = train_dataset if flag == "train" else test_dataset
         data_loader = DataLoader(
             data_set,
             batch_size=batch_size,
@@ -92,12 +95,12 @@ class Exp_Main(Exp_Basic):
         return total_loss
 
     def evaluation(self, validation_data, validation_loader, criterion) -> float:
-        self.model.eval() 
+        self.model.eval()
         labels = []
         for image in validation_loader:
             label = self.model(image)
             labels.append(label)
-        return labels 
+        return labels
 
     def _set_checkpoint(self, setting) -> str:
         path = os.path.join(self.args.checkpoints, setting)

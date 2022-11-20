@@ -24,12 +24,15 @@ def train_test_split(
     train_dataset, test_dataset = torch.utils.data.random_split(
         dataset, [train_size, test_size]
     )
-    if flag == "train":
-        return train_dataset
-    elif flag == "test":
-        return test_dataset
-    else:
-        raise NameError
+    return train_dataset, test_dataset
+
+
+# if flag == "train":
+#     return train_dataset
+# elif flag == "test":
+#     return test_dataset
+# else:
+#     raise NameError
 
 
 def transform_label(
