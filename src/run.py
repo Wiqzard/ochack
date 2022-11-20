@@ -101,7 +101,9 @@ def main():
             setting = f"{args.model_id}_{args.model}_{args.data}_{args.des}_{ii}"
 
             exp = Exp(args)  # set experiments
-            logger.info(f">>>>>>>start training : {setting}>>>>>>>>>>>>>>>>>>>>>>>>>>")
+            logger.info(
+                f">>>>>>> start training : {setting} >>>>>>>>>>>>>>>>>>>>>>>>>>"
+            )
             exp.train(setting)
 
             # logger.info(f">>>>>>>testing : {setting}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
@@ -109,16 +111,16 @@ def main():
 
             if args.do_predict:
                 logger.info(
-                    f">>>>>>>predicting : {setting}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+                    f">>>>>>> predicting : {setting} <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
                 )
                 exp.predict(setting, True)
 
         ii = 0
-        setting = f"{args.model_id}_{args.model}_{args.data}_{args.des}_{ii}"
+        # setting = f"{args.model_id}_{args.model}_{args.data}_{args.des}_{ii}"
 
-        exp = Exp(args)  # set experiments
-        logger.info(f">>>>>>>testing : {setting}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-        exp.test(setting, test=1)
+        # exp = Exp(args)  # set experiments
+        # logger.info(f" >>>>>>>testing : {setting}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< ")
+        # exp.test(setting, test=1)
 
         torch.cuda.empty_cache()
 

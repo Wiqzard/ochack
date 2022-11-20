@@ -1,32 +1,65 @@
 import torch
 import os
-from torch.utils.data import Dataset
-from torchvision.datasets import ImageFolder
+
 from typing import Tuple, List, Dict
 import json
 from PIL import Image
 from torchvision.io.image import read_image
 import sys
 
+from data_provider.data_set import ImageDataset
+
 sys.path.insert(0, "/Users/sebastian/Documents/Projects/sordi_ai/src")
 
 
-class SordiAiDataset(Dataset):
-    DIRECTORY = (
-        "/Users/sebastian/Documents/Projects/sordi_ai/src/data/SORDI_2022_Single_Assets"
-    )
-    IMG_EXTENSIONS = (
-        ".jpg",
-        ".jpeg",
-        ".png",
-        ".ppm",
-        ".bmp",
-        ".pgm",
-        ".tif",
-        ".tiff",
-        ".webp",
-    )
+class SordiAiDatasetEval(ImageDataset):
+    def __init__(
+        self,
+        root_path: str,
+        data_path: str = "eval",
+        transforms=None,
+        flag="eval",
+    ) -> None:
+        super().__init__(root_path, data_path, flag)
+        self.transforms = transforms
+        self.flag = flag
 
+        self._set_directory()
+        self.samples = self._make_dataset()
+
+    def _make_dataset(self) -> List[Tuple[str, str]]:
+        instances = []
+        images_path = os.path.join(self.DIRECTORY, "images")
+        images_paths = sorted(os.listdir(images_path))
+        for image in images_paths:
+            if image.startswith("."):
+                continue
+            image = os.path.join(images_path, image)
+            instances.append(image)
+        return instances
+
+    def get_raw_image(self, index: int) -> torch.Tensor:
+        path_image, _ = self.samples[index]
+        return read_image(path_image)
+
+    def image_loader(self, path: str) -> Image.Image:
+        with open(path, "rb") as f:
+            img = Image.open(f)
+            return img.convert("RGB")
+
+    def __len__(self) -> int:
+        return len(self.samples)
+
+    def __getitem__(self, index: int) -> Tuple:
+        # image after transform 3 ,720, 1280
+        path_image = self.samples[index]
+        image = self.image_loader(path_image)
+        image = self.transforms(image) if self.transforms else image
+        # print(image.shape)
+        return image
+
+
+class SordiAiDataset(ImageDataset):
     def __init__(
         self,
         root_path: str,
@@ -34,14 +67,12 @@ class SordiAiDataset(Dataset):
         transforms=None,
         flag="train",
     ) -> None:
-        super().__init__()
-        self.root_path = root_path
-        self.data_path = data_path
+        super().__init__(root_path, data_path, flag)
         self.transforms = transforms
         self.flag = flag
 
+        self._set_directory()
         self.samples = self._make_dataset()
-        self.DIRECTORY = os.path.join(self.root_path, self.data_path)
 
     def _make_dataset(self) -> List[Tuple[str, str]]:
         instances = []

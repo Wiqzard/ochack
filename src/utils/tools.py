@@ -99,3 +99,22 @@ def log_train_epoch(epoch, train_steps, train_loss, vali_loss) -> None:
             epoch + 1, train_steps, train_loss, vali_loss
         )
     )
+
+
+def show_prediction(index: int) -> None:
+    model.eval()
+    image, _ = train_dataset[index]
+    img = train_dataset.get_raw_image(index)
+    prediction = model(image.unsqueeze(0))[0]
+    print(prediction)
+    labels = [weights.meta["categories"][i] for i in prediction["labels"]]
+    box = draw_bounding_boxes(
+        img,
+        boxes=prediction["boxes"],
+        labels=labels,
+        colors="red",
+        width=4,
+        font_size=30,
+    )
+    im = to_pil_image(box.detach())
+    im.show()
