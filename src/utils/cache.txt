@@ -89,3 +89,38 @@
 #
 #        return image, label[0]
 #
+
+
+
+
+
+
+
+        if flag == "test":
+            shuffle_flag = False
+            drop_last = True
+            batch_size = args.batch_size
+        elif flag == "eval":
+            shuffle_flag = False
+            drop_last = False
+            batch_size = 1
+        else:
+            shuffle_flag = True
+            drop_last = True
+            batch_size = args.batch_size
+
+        preprocess = self.weights.transforms()
+        full_dataset = SordiAiDataset(
+            root_path=args.root_path,
+            data_path=args.data_path,
+            transforms=preprocess,
+            flag=flag,
+        )
+        data_set = train_test_split(full_dataset, flag) 
+        data_loader = DataLoader(
+            data_set,
+            batch_size=batch_size,
+            shuffle=shuffle_flag,
+            num_workers=args.num_workers,
+            drop_last=drop_last,
+        )

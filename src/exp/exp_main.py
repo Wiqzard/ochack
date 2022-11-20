@@ -1,4 +1,4 @@
-from data_provider.data_factoy import SordiAiDataset
+from data_provider.data_factoy import SordiAiDataset, SordiAiDatasetEval
 from network.pretrained import create_model
 from exp.exp_basic import Exp_Basic
 from utils.tools import (
@@ -8,12 +8,12 @@ from utils.tools import (
     logger,
     log_train_progress,
     log_train_epoch,
+    train_test_split
 )
 from utils.constants import CLASSES
-
 # from utils.tools import EarlyStopping, adjust_learning_rate
 # from utils.metrics import metric
-
+from typing import Tuple, Optional, List, Union
 import time
 import numpy as np
 import os
@@ -35,29 +35,32 @@ class Exp_Main(Exp_Basic):
         model = model.float().to(self.device)
         return model
 
-    def _get_data(self, flag: str = "train") -> DataLoader:
+    def _get_data(self, flag: str = "train") -> Tuple[Union[SordiAiDataset, SordiAiDatasetEval],DataLoader]:
         args = self.args
-
-        if flag == "test":
-            shuffle_flag = False
-            drop_last = True
-            batch_size = args.batch_size
-        elif flag == "pred":
+        preprocess = self.weights.transforms()
+        if flag == "eval":
             shuffle_flag = False
             drop_last = False
             batch_size = 1
+            data_set = SordiAiDatasetEval(
+            root_path=args.root_path,
+            data_path=args.data_path,
+            transforms=preprocess,
+            flag=flag,
+            )
         else:
             shuffle_flag = True
             drop_last = True
             batch_size = args.batch_size
 
-        preprocess = self.weights.transforms()
-        data_set = SordiAiDataset(
+            full_dataset = SordiAiDataset(
             root_path=args.root_path,
             data_path=args.data_path,
             transforms=preprocess,
             flag=flag,
-        )
+            )
+            data_set = train_test_split(full_dataset, flag) 
+
         data_loader = DataLoader(
             data_set,
             batch_size=batch_size,
@@ -77,18 +80,24 @@ class Exp_Main(Exp_Basic):
         criterion = nn.MSELoss()
         return criterion
 
-    def validation(self, validation_data, validation_loader, criterion) -> float:
+    def test(self, test_data, test_loader, criterion) -> float:
         self.model.train()  # train????
         total_loss = []
-        for image, label in validation_loader:
-            target = transform_label(classes=self.classes, labels=label)
-            loss_dict = self.model(image, target)
-            losses = sum(loss_dict.values())
-            total_loss.append(losses.item())
-
-        total_loss = np.average(total_loss)
+        with torch.no_grad():
+            for image, label in test_loader:
+                loss = self._process_one_batch(image=image, label=label)
+                total_loss.append(loss.item())
+            total_loss = np.average(total_loss)
         self.model.train()
         return total_loss
+
+    def evaluation(self, validation_data, validation_loader, criterion) -> float:
+        self.model.eval() 
+        labels = []
+        for image in validation_loader:
+            label = self.model(image)
+            labels.append(label)
+        return labels 
 
     def _set_checkpoint(self, setting) -> str:
         path = os.path.join(self.args.checkpoints, setting)
@@ -96,13 +105,15 @@ class Exp_Main(Exp_Basic):
             os.makedirs(path)
         return path
 
+    def _process_one_batch(self, image, label):
+        target = transform_label(classes=self.classes, labels=label)
+        loss_dict = self.model(image, target)
+        return sum(loss_dict.values())
+
     def train(self, setting):  # sourcery skip: low-code-quality
         train_data, train_loader = self._get_data(flag="train")
-        validation_data, validation_loader = self._get_data(flag="test")
+        test_data, test_loader = self._get_data(flag="test")
 
-        # path = os.path.join(self.args.checkpoints, setting)
-        # if not os.path.exists(path):
-        #    os.makedirs(path)
         path = self._set_checkpoint(setting=setting)
         time_now = time.time()
 
@@ -125,9 +136,7 @@ class Exp_Main(Exp_Basic):
                 iter_count += 1
 
                 model_optim.zero_grad()
-                target = transform_label(classes=self.classes, labels=label)
-                loss_dict = self.model(image, target)
-                loss = sum(loss_dict.values())
+                loss = self._process_one_batch(image=image, label=label)
                 train_loss.append(loss.item())
 
                 if (i + 1) % 100 == 0:
@@ -139,20 +148,7 @@ class Exp_Main(Exp_Basic):
                         i=i,
                         iter_count=iter_count,
                     )
-                    # logger.info(
-                    #    "\titers: {0}, epoch: {1} | loss: {2:.7f}".format(
-                    #        i + 1, epoch + 1, loss.item()
-                    #    )
-                    # )
-                    # speed = (time.time() - time_now) / iter_count
-                    # left_time = speed * (
-                    #    (self.args.train_epochs - epoch) * train_steps - i
-                    # )
-                    # logger.info(
-                    #    "\tspeed: {:.4f}s/iter; left time: {:.4f}s".format(
-                    #        speed, left_time
-                    #    )
-                    # )
+
                     iter_count = 0
                     time_now = time.time()
 
@@ -166,14 +162,10 @@ class Exp_Main(Exp_Basic):
 
             logger.info(f"Epoch: {epoch + 1} cost time: {time.time() - epoch_time}")
             train_loss = np.average(train_loss)
-            vali_loss = self.validation(validation_loader=validation_loader)
-            log_train_epoch(epoch=epoch, train_steps=train_steps, vali_loss=vali_loss)
-            # logger.info(
-            #    "Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f}".format(
-            #        epoch + 1, train_steps, train_loss, vali_loss
-            #    )
-            # )
-            early_stopping(vali_loss, self.model, path)
+            test_loss = self.test(test_loader=test_loader)
+            log_train_epoch(epoch=epoch, train_steps=train_steps, vali_loss=test_loss)
+
+            early_stopping(test_loss, self.model, path)
             if early_stopping.early_stop:
                 logger.info("Early stopping")
                 break

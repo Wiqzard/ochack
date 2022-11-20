@@ -17,14 +17,19 @@ logger.addHandler(ch)
 
 
 def train_test_split(
-    dataset: SordiAiDataset, ratio: float = 0.8
+    dataset: SordiAiDataset, ratio: float = 0.8, flag: str = "train"
 ) -> Tuple[SordiAiDataset, SordiAiDataset]:
     train_size = int(ratio * len(dataset))
     test_size = len(dataset) - train_size
     train_dataset, test_dataset = torch.utils.data.random_split(
         dataset, [train_size, test_size]
     )
-    return train_dataset, test_dataset
+    if flag == "train":
+        return train_dataset
+    elif flag == "test":
+        return test_dataset
+    else:
+        raise NameError
 
 
 def transform_label(

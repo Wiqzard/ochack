@@ -17,7 +17,9 @@ model, weights = create_model(len(CLASSES))
 preprocess = weights.transforms()
 
 full_dataset = SordiAiDataset(root_path="./data/", transforms=preprocess)
-train_dataset, test_dataset = train_test_split(full_dataset)
+train_dataset, test_dataset = train_test_split(full_dataset, "train"), train_test_split(
+    full_dataset, "test"
+)
 eval_dataset = SordiAiDatasetEval(root_path="./data/", transforms=preprocess)
 train_dataloder = DataLoader(
     train_dataset,
