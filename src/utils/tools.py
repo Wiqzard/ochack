@@ -17,7 +17,7 @@ logger.addHandler(ch)
 
 
 def train_test_split(
-    dataset: SordiAiDataset, ratio: float = 0.8, flag: str = "train"
+    dataset: SordiAiDataset, ratio: float = 0.8
 ) -> Tuple[SordiAiDataset, SordiAiDataset]:
     train_size = int(ratio * len(dataset))
     test_size = len(dataset) - train_size

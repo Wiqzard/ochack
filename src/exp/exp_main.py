@@ -63,7 +63,7 @@ class Exp_Main(Exp_Basic):
                 flag=flag,
             )
             train_dataset, test_dataset = train_test_split(
-                dataset=full_dataset, ratio=args.ratio, flag=flag
+                dataset=full_dataset, ratio=args.ratio
             )
             data_set = train_dataset if flag == "train" else test_dataset
         data_loader = DataLoader(
