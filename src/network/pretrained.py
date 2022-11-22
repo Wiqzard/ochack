@@ -19,6 +19,14 @@ def create_model(num_classes: int):
     model = fasterrcnn_resnet50_fpn_v2(weights=weights, box_score_thresh=0.95)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+
+    # in_features = model.roi_heads.box_predictor.cls_score.in_features
+    # model.roi_heads.box_predictor.cls_score = torch.nn.Linear(
+    #     in_features=in_features, out_features=NUM_CLASSES, bias=True
+    # )
+    # model.roi_heads.box_predictor.bbox_pred = torch.nn.Linear(
+    #     in_features=in_features, out_features=NUM_CLASSES*4, bias=True
+    # )
     return model, weights
 
 

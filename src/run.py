@@ -39,9 +39,9 @@ def main():
     parser.add_argument(
         "--root_path", type=str, default="./data/", help="root path of the data file"
     )
-    parser.add_argument(
-        "--data_path", type=str, default="SORDI_2022_Single_Assets", help="data file"
-    )
+    # parser.add_argument(
+    #    "--data_path", type=str, default="SORDI_2022_Single_Assets", help="data file"
+    # )
     parser.add_argument(
         "--ratio", type=float, default=0.8, help="train-test split ratio"
     )
@@ -64,6 +64,13 @@ def main():
     parser.add_argument("--train_epochs", type=int, default=10, help="train epochs")
     parser.add_argument(
         "--patience", type=int, default=3, help="early stopping patience"
+    )
+    parser.add_argument(
+        "--optimizer", type=str, default="adam", help="optimizer: [adam, sgd] "
+    )
+    parser.add_argument("--momentum", type=float, default=0.9, help="momentum for sgd ")
+    parser.add_argument(
+        "--weight_decay", type=float, default=0.0005, help="weight decay for sgd "
     )
     parser.add_argument(
         "--learning_rate", type=float, default=0.0001, help="optimizer learning rate"
@@ -124,8 +131,13 @@ def main():
         # exp = Exp(args)  # set experiments
         # logger.info(f" >>>>>>>testing : {setting}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< ")
         # exp.test(setting, test=1)
-
         torch.cuda.empty_cache()
+
+    else:
+        exp = Exp(args)
+        setting = f"{args.model_id}_{args.model}_{args.data}_{args.des}"
+        logger.info(f">>>>>>> evaluating: {setting} <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+        exp.evaluation(setting)
 
 
 if __name__ == "__main__":

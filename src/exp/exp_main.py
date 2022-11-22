@@ -9,6 +9,7 @@ from utils.tools import (
     log_train_progress,
     log_train_epoch,
     train_test_split,
+    write_to_csv
 )
 from utils.constants import CLASSES
 
@@ -22,6 +23,7 @@ import torch
 import torch.nn as nn
 from torch import optim
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 
 class Exp_Main(Exp_Basic):
@@ -76,8 +78,20 @@ class Exp_Main(Exp_Basic):
         return data_set, data_loader
 
     def _select_optimizer(self):
-        # sourcery skip: inline-immediately-returned-variable
-        model_optim = optim.Adam(self.model.parameters(), lr=self.args.learning_rate)
+        args = self.args
+        params = [p for p in self.model.parameters() if p.requires_grad]
+        if args.optimizer == "adam":
+            # sourcery skip: inline-immediately-returned-variable
+            model_optim = optim.Adam(
+                params, lr=args.learning_rate
+            )
+        elif self.args.optimizer == "sgd":
+            model_optim = optim.SGD(
+                params,
+                lr=args.learning_rate,
+                momentum=args.momentum,
+                weight_decay=args.weight_decay
+            )#optimizer = torch.optim.SGD(params, lr=0.001, momentum=0.9, nesterov=True)
         return model_optim
 
     def _select_criterion(self):
@@ -96,13 +110,13 @@ class Exp_Main(Exp_Basic):
         self.model.train()
         return total_loss
 
-    def evaluation(self, validation_data, validation_loader, criterion) -> float:
+    def evaluation(self, setting) -> None:
         self.model.eval()
-        labels = []
-        for image in validation_loader:
-            label = self.model(image)
-            labels.append(label)
-        return labels
+        idx = 0
+        _, eval_dataloader = self._get_data(flag="eval")
+        for i, (image_name, image_width, image_height, image) in tqdm(enumerate(eval_dataloader)):
+            label = self.model(image)[0]
+            idx = write_to_csv(idx, image_name, image_width, image_height, label) 
 
     def _set_checkpoint(self, setting) -> str:
         path = os.path.join(self.args.checkpoints, setting)
@@ -112,7 +126,9 @@ class Exp_Main(Exp_Basic):
 
     def _process_one_batch(self, image, label):
         target = transform_label(classes=self.classes, labels=label)
+        # target = label
         loss_dict = self.model(image, target)
+        print(loss_dict)
         return sum(loss_dict.values())
 
     def train(self, setting):  # sourcery skip: low-code-quality
@@ -137,18 +153,18 @@ class Exp_Main(Exp_Basic):
 
             self.model.train()
             epoch_time = time.time()
-            for i, (image, label) in enumerate(train_loader):
+            for i, (image, label) in tqdm(enumerate(train_loader)):
                 iter_count += 1
 
                 model_optim.zero_grad()
                 loss = self._process_one_batch(image=image, label=label)
                 train_loss.append(loss.item())
-
                 if (i + 1) % 100 == 0:
                     log_train_progress(
                         args=self.args,
                         time_now=time_now,
                         loss=loss,
+                        epoch=epoch,
                         train_steps=train_steps,
                         i=i,
                         iter_count=iter_count,
@@ -157,26 +173,25 @@ class Exp_Main(Exp_Basic):
                     iter_count = 0
                     time_now = time.time()
 
-                if self.args.use_amp:
-                    scaler.scale(loss).backward()
-                    scaler.step(model_optim)
-                    scaler.update()
-                else:
-                    loss.backward()
-                    model_optim.step()
+            # if self.args.use_amp:
+            #     scaler.scale(loss).backward()
+            #     scaler.step(model_optim)
+            #     scaler.update()
+            # else:
+            #     loss.backward()
+            #     model_optim.step()
 
             logger.info(f"Epoch: {epoch + 1} cost time: {time.time() - epoch_time}")
             train_loss = np.average(train_loss)
             test_loss = self.test(test_loader=test_loader)
-            log_train_epoch(epoch=epoch, train_steps=train_steps, vali_loss=test_loss)
+            log_train_epoch(epoch=epoch, train_steps=train_steps, test_loss=test_loss)
 
             early_stopping(test_loss, self.model, path)
             if early_stopping.early_stop:
                 logger.info("Early stopping")
-                break
 
             adjust_learning_rate(model_optim, epoch + 1, self.args)
-            break
+
         best_model_path = f"{path}/checkpoint.pth"
         self.model.load_state_dict(torch.load(best_model_path))
 

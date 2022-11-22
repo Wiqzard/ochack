@@ -4,9 +4,9 @@ import os
 
 class ImageDataset(Dataset):
 
-    DIRECTORY = (
-        "/Users/sebastian/Documents/Projects/sordi_ai/src/data/SORDI_2022_Single_Assets"
-    )
+    #    DIRECTORY = (
+    #        "/Users/sebastian/Documents/Projects/sordi_ai/src/data/SORDI_2022_Single_Assets"
+    #    )
     IMG_EXTENSIONS = (
         ".jpg",
         ".jpeg",

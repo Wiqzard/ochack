@@ -5,8 +5,11 @@ import time
 import torch
 from torchvision.utils import draw_bounding_boxes
 from torchvision.transforms.functional import to_pil_image
+import pandas as pd
 
-from data_provider.data_factoy import SordiAiDataset
+from utils.constants import CLASSES, CLASSES_ID
+
+# from data_provider.data_factoy import SordiAiDataset
 
 logger = logging.getLogger("__name__")
 level = logging.INFO
@@ -16,9 +19,7 @@ ch.setLevel(level)
 logger.addHandler(ch)
 
 
-def train_test_split(
-    dataset: SordiAiDataset, ratio: float = 0.8
-) -> Tuple[SordiAiDataset, SordiAiDataset]:
+def train_test_split(dataset, ratio: float = 0.8):
     train_size = int(ratio * len(dataset))
     test_size = len(dataset) - train_size
     train_dataset, test_dataset = torch.utils.data.random_split(
@@ -55,14 +56,6 @@ def transform_label(
             labels["ObjectClassName"],
         )
     ]
-    # targets = {
-    #     "boxes": torch.tensor([
-    #         torch.tensor([x1, y1, x2, y2]).unsqueeze(0)
-    #         for x1, y1, x2, y2 in zip(b["Left"], b["Top"], b["Right"], b["Bottom"])
-    #     ]),
-    #     "labels": torch.tensor([classes[int(label)] for label in b["ObjectClassId"]]),
-    # }
-    # print(targets["boxes"].shape)
     return targets
 
 
@@ -122,14 +115,70 @@ def log_train_progress(args, time_now, loss, epoch, train_steps, i, iter_count) 
     logger.info("\tspeed: {:.4f}s/iter; left time: {:.4f}s".format(speed, left_time))
 
 
-def log_train_epoch(epoch, train_steps, train_loss, vali_loss) -> None:
+def log_train_epoch(epoch, train_steps, train_loss, test_loss) -> None:
     logger.info(
-        "Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f}".format(
-            epoch + 1, train_steps, train_loss, vali_loss
+        "Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Test Loss: {3:.7f}".format(
+            epoch + 1, train_steps, train_loss, test_loss
         )
     )
 
 
+def log_loss(loss):
+    logger.info(
+        f"""Classifier Loss: {loss["loss_classifier"]} --- Box-Reg Loss: {loss["loss_box_reg"]}  \n
+            Objectness Loss: {loss["loss_objectness"]} --- RPN-Box-Reg Loss: {loss["loss_rpn_box_reg"]} """
+    )
+
+
+def falsy_path(directory):
+    return bool(
+        (
+            directory.startswith(".")
+            or directory.endswith("json")
+            or directory.endswith("zip")
+        )
+    )
+
+
+import csv
+
+
+def write_to_csv(idx, image_name, image_width, image_height, label) -> None:
+    """writes prection to csv,
+    label: {'boxes': tensor([], size=(0, 4)),
+             'labels': tensor([], dtype=torch.int64),
+             'scores': tensor([]}
+    """
+    num_predictions = label["labels"].shape[0]
+    with open("src/output/" + "submission.csv", "a") as submission:
+        csv_writer = csv.writer(submission, delimiter=",")
+        for i in range(num_predictions):
+            label_num = label["labels"][i].item()
+            if label_num != 0:
+                idx += 1
+                object_class_id = CLASSES_ID.index(label_num)
+                object_class_name = CLASSES.index(label_num - 1)
+                boxes = label["boxes"][i, :]
+                score = label["scores"][i].item()
+
+                row = {
+                    "detection_id": idx,
+                    "image_name": image_name,
+                    "image_width": image_width,
+                    "image_height": image_height,
+                    "object_class_id": object_class_id,
+                    "object_class_name": object_class_name,
+                    "bbox_left": boxes[0].item(),
+                    "bbox_top": boxes[1].item(),
+                    "bbox_right": boxes[2].item(),
+                    "bbox_bottom": boxes[3].item(),
+                    "confidence": score,
+                }
+                csv_writer.writerow(row)
+    return idx
+
+
+# row["detection_id"]
 # def show_prediction(image, index: int, dataset: Optional) -> None:
 #    model.eval()
 #    image, _ = train_dataset[index]

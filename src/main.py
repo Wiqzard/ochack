@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import DataLoader
 from data_provider.data_factoy import SordiAiDataset, SordiAiDatasetEval
 from utils.config import config
-from network.pretrained import create_model, weights  # , model
+from network.pretrained import create_model  # , model
 from typing import Dict, List
 
 from utils.tools import transform_label, train_test_split
@@ -15,8 +15,8 @@ model, weights = create_model(len(CLASSES))
 
 preprocess = weights.transforms()
 
-full_dataset = SordiAiDataset(root_path="./data/", transforms=preprocess)
-train_dataset, test_dataset = train_test_split(full_dataset, 0.8, "train")
+full_dataset = SordiAiDataset(root_path="./data/")  # , transforms=preprocess)
+train_dataset, test_dataset = train_test_split(full_dataset, 0.8)
 
 eval_dataset = SordiAiDatasetEval(root_path="./data/", transforms=preprocess)
 train_dataloder = DataLoader(
@@ -26,9 +26,10 @@ train_dataloder = DataLoader(
     num_workers=config["num_workers"],
     drop_last=config["drop_last"],
 )
-# print(train_dataset[0])
+print(train_dataset[0][0].shape)
 # print(test_dataset[0])
-# print(eval_dataset[0])
+print(eval_dataset[0][-1].shape)
+# print(next(iter(train_dataloder)))
 
 
 def transform_label(
