@@ -11,6 +11,7 @@ from utils.tools import (
     train_test_split,
     show_tranformed_image,
     collate_fn,
+    dotdict,
 )
 from utils.constants import CLASSES
 from exp.exp_main import Exp_Main
@@ -34,23 +35,21 @@ train_dataloder = DataLoader(
     drop_last=config["drop_last"],
     collate_fn=collate_fn,
 )
-
-
-def trafo(labels):
-    return [dict(zip(labels, t)) for t in zip(*labels.values())]
-
+print(next(iter(train_dataloder)))
 
 # print(len(full_dataset))
-print(type(full_dataset[-1][1]))
+# print(trafo(full_dataset[-1][1]))
+
+
 # print(full_dataset[-1][0].shape)
 
 # print(train_dataset[0][0].shape)
-## print(test_dataset[0])
+# print(test_dataset[0])
 # print(eval_dataset[0][-1].shape)
-batch = next(iter(train_dataloder))
-print(batch)
+# batch = next(iter(train_dataloder))
+# print(batch)
 ## print(transform_label(CLASSES, batch[1][0]))
-# show_tranformed_image(train_dataset, CLASSES)
+show_tranformed_image(train_dataset, CLASSES)
 
 # show_tranformed_image(train_dataloder, CLASSES)
 

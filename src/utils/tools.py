@@ -9,6 +9,7 @@ import pandas as pd
 import cv2
 from utils.constants import CLASSES, CLASSES_ID
 import random
+import matplotlib.pyplot as plt
 
 # from data_provider.data_factoy import SordiAiDataset
 
@@ -18,6 +19,10 @@ logger.setLevel(level)
 ch = logging.StreamHandler()
 ch.setLevel(level)
 logger.addHandler(ch)
+
+
+def dict_list_to_list_dict(labels):
+    return [dict(zip(labels, t)) for t in zip(*labels.values())]
 
 
 def train_test_split(dataset, ratio: float = 0.8):
@@ -96,8 +101,17 @@ class EarlyStopping:
         self.early_stop = False
         self.val_loss_min = np.Inf
         self.delta = delta
+        self.train_loss = []
+        self.train_losses = {
+            "loss_classifier": [],
+            "loss_box_reg": [],
+            "loss_objectness": [],
+            "loss_rpn_box_reg": [],
+        }
+        self.test_loss = []
 
-    def __call__(self, val_loss, model, path):
+    def __call__(self, loss_dict, train_loss, val_loss, model, path):
+        self.store_loss(loss_dict, train_loss, val_loss)
         score = -val_loss
         if self.best_score is None:
             self.best_score = score
@@ -107,10 +121,40 @@ class EarlyStopping:
             print(f"EarlyStopping counter: {self.counter} out of {self.patience}")
             if self.counter >= self.patience:
                 self.early_stop = True
+                self.plot_result()
         else:
             self.best_score = score
             self.save_checkpoint(val_loss, model, path)
             self.counter = 0
+
+    def store_loss(self, loss_dict, train_loss, val_loss) -> None:
+        self.train_losses["loss_classifier"] = np.average(loss_dict["loss_classifier"])
+        self.train_losses["loss_box_reg"] = np.average(loss_dict["loss_box_reg"])
+        self.train_losses["loss_objectness"] = np.average(loss_dict["loss_objectness"])
+        self.train_losses["loss_rpn_box_reg"] = np.average(
+            loss_dict["loss_rpn_box_reg"]
+        )
+
+        self.train_loss.append(train_loss)
+        self.test_loss.append(val_loss)
+
+    def plot_result(self) -> None:
+
+        fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(18, 6))
+        axes[0].plot(
+            self.train_losses.values(),
+            label=[
+                "loss_classifier",
+                "loss_box_reg",
+                "loss_objectness",
+                "loss_rpn_box_reg",
+            ],
+        )
+        axes[0].legend(loc="upper right")
+        axes[1].plot(self.train_loss, label="train loss")
+        axes[1].legend(loc="upper right")
+        axes[2].plot(self.test, label="test loss")
+        axes[2].legend(loc="upper right")
 
     def save_checkpoint(self, val_loss, model, path):
         if self.verbose:
@@ -201,19 +245,20 @@ def show_tranformed_image(train_dataset, classes):
     labels are correct or not.
 
     """
-    colors = np.random.uniform(0, 1, size=(len(CLASSES), 3))
-    for i in range(2):
+    colors = np.random.uniform(0, 1, size=(200, 3))
+    for _ in range(2):
         index = random.randint(0, len(train_dataset) - 1)
         images, targets = train_dataset[index]  # next(iter(train_loader))
+        # targets = dict_list_to_list_dict(targets)
         #        targets = transform_target(targets)
         print(targets)
-        boxes = targets[i]["boxes"].cpu().numpy().astype(np.int32)
-        labels = targets[i]["labels"].cpu().numpy().astype(np.int32)
-        print(boxes)
-        print(labels)
+        boxes = targets["boxes"].cpu().numpy().astype(np.int32)
+        labels = targets["labels"].cpu().numpy().astype(np.int32)
         # Get all the predicited class names.
         classes_rev = {v: k for k, v in classes.items()}
-        pred_classes = classes_rev[labels]  # [classes_rev[label] for label in labels]
+        pred_classes = [
+            classes_rev[label] for label in labels
+        ]  # classes_rev[labels]  # [classes_rev[label] for label in labels]
         sample = images.permute(1, 2, 0).cpu().numpy()
         sample = cv2.cvtColor(sample, cv2.COLOR_RGB2BGR)
         for box_num, box in enumerate(boxes):

@@ -49,7 +49,7 @@ def create_model(num_classes: int):
 def get_transform():
     transforms = []
     transforms.append(T.PILToTensor())
-    transforms.append(T.Resize((600, 1024)))
+    # transforms.append(T.Resize((600, 1024)))
     transforms.append(T.ConvertImageDtype(torch.float))
     return T.Compose(transforms)
 

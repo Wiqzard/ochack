@@ -1,5 +1,5 @@
 from data_provider.data_factoy import SordiAiDataset, SordiAiDatasetEval
-from network.pretrained import create_model
+from network.pretrained import create_model, get_transform
 from exp.exp_basic import Exp_Basic
 from utils.tools import (
     transform_label,
@@ -10,6 +10,7 @@ from utils.tools import (
     log_train_epoch,
     train_test_split,
     write_to_csv,
+    collate_fn,
 )
 from utils.constants import CLASSES
 
@@ -42,16 +43,13 @@ class Exp_Main(Exp_Basic):
         self, flag: str = "train"
     ) -> Tuple[Union[SordiAiDataset, SordiAiDatasetEval], DataLoader]:
         args = self.args
-        preprocess = self.weights.transforms()
         if flag == "eval":
             shuffle_flag = False
             drop_last = False
             batch_size = 1
             data_set = SordiAiDatasetEval(
                 root_path=args.root_path,
-                data_path=args.data_path,
-                transforms=preprocess,
-                flag=flag,
+                transforms=get_transform(),
             )
         else:
             shuffle_flag = True
@@ -60,12 +58,10 @@ class Exp_Main(Exp_Basic):
 
             full_dataset = SordiAiDataset(
                 root_path=args.root_path,
-                data_path=args.data_path,
-                transforms=preprocess,
-                flag=flag,
+                transforms=get_transform(),
             )
             train_dataset, test_dataset = train_test_split(
-                dataset=full_dataset,  # ratio=args.ratio
+                dataset=full_dataset, ratio=args.ratio
             )
             data_set = train_dataset if flag == "train" else test_dataset
         data_loader = DataLoader(
@@ -74,6 +70,7 @@ class Exp_Main(Exp_Basic):
             shuffle=shuffle_flag,
             num_workers=args.num_workers,
             drop_last=drop_last,
+            collate_fn=collate_fn,
         )
         return data_set, data_loader
 
@@ -89,7 +86,7 @@ class Exp_Main(Exp_Basic):
                 lr=args.learning_rate,
                 momentum=args.momentum,
                 weight_decay=args.weight_decay,
-            )  # optimizer = torch.optim.SGD(params, lr=0.001, momentum=0.9, nesterov=True)
+            )
         return model_optim
 
     def _select_criterion(self) -> None:
@@ -103,27 +100,6 @@ class Exp_Main(Exp_Basic):
         )
         return lr_scheduler
 
-    def test(self, test_data, test_loader, criterion) -> float:
-        self.model.train()  # train????
-        total_loss = []
-        with torch.no_grad():
-            for image, label in test_loader:
-                loss = self._process_one_batch(image=image, label=label)
-                total_loss.append(loss.item())
-            total_loss = np.average(total_loss)
-        self.model.train()
-        return total_loss
-
-    def evaluation(self, setting) -> None:
-        self.model.eval()
-        idx = 0
-        _, eval_dataloader = self._get_data(flag="eval")
-        for i, (image_name, image_width, image_height, image) in tqdm(
-            enumerate(eval_dataloader)
-        ):
-            label = self.model(image)[0]
-            idx = write_to_csv(idx, image_name, image_width, image_height, label)
-
     def _set_checkpoint(self, setting) -> str:
         path = os.path.join(self.args.checkpoints, setting)
         if not os.path.exists(path):
@@ -131,11 +107,41 @@ class Exp_Main(Exp_Basic):
         return path
 
     def _process_one_batch(self, image, label):
-        target = transform_label(classes=self.classes, labels=label)
-        # target = label
-        loss_dict = self.model(image, target)
-        print(loss_dict)
-        return sum(loss_dict.values())
+        # sourcery skip: inline-immediately-returned-variable
+        images = [image_.to(self.device) for image_ in image]
+        targets = [
+            {k: v.to(self.device) for k, v in t.items() if k != "image_id"}
+            for t in label
+        ]
+        images = list(image)
+        if self.args.use_amp:
+            with torch.cuda.amp.autocast():
+                loss_dict = self.model(images, targets)
+        else:
+            loss_dict = self.model(images, targets)
+        return loss_dict
+
+    def test(self, test_loader) -> float:
+        self.model.train()  # train????
+        total_loss = []
+        with torch.no_grad():
+            for image, label in test_loader:
+                loss = self._process_one_batch(image=image, label=label)
+                total_loss.append(sum(loss.values()).item())
+            total_loss = np.average(total_loss)
+        self.model.train()
+        return total_loss
+
+    def evaluation(self, setting) -> None:
+        self.model.eval()
+        idx = 0
+        with torch.no_grad():
+            _, eval_dataloader = self._get_data(flag="eval")
+            for i, (image_name, image_width, image_height, image) in tqdm(
+                enumerate(eval_dataloader)
+            ):
+                label = self.model(image)[0]
+                idx = write_to_csv(idx, image_name, image_width, image_height, label)
 
     def train(self, setting):  # sourcery skip: low-code-quality
         train_data, train_loader = self._get_data(flag="train")
@@ -157,15 +163,26 @@ class Exp_Main(Exp_Basic):
         for epoch in range(self.args.train_epochs):
             iter_count = 0
             train_loss = []
+            train_losses = {
+                "loss_classifier": [],
+                "loss_box_reg": [],
+                "loss_objectness": [],
+                "loss_rpn_box_reg": [],
+            }
 
             self.model.train()
             epoch_time = time.time()
             for i, (image, label) in tqdm(enumerate(train_loader)):
                 iter_count += 1
-
                 model_optim.zero_grad()
-                loss = self._process_one_batch(image=image, label=label)
+
+                loss_dict = self._process_one_batch(image=image, label=label)
+                loss = sum(loss_dict.values())
                 train_loss.append(loss.item())
+                train_losses["loss_classifier"].append(loss_dict["loss_classifier"])
+                train_losses["loss_box_reg"].append(loss_dict["loss_box_reg"])
+                train_losses["loss_objectness"].append(loss_dict["loss_objectness"])
+                train_losses["loss_rpn_box_reg"].append(loss_dict["loss_rpn_box_reg"])
                 if (i + 1) % 100 == 0:
                     log_train_progress(
                         args=self.args,
@@ -179,27 +196,25 @@ class Exp_Main(Exp_Basic):
 
                     iter_count = 0
                     time_now = time.time()
-
-            # if self.args.use_amp:
-            #     scaler.scale(loss).backward()
-            #     scaler.step(model_optim)
-            #     scaler.update()
-            # else:
-            #     loss.backward()
-            #     model_optim.step()
+            if self.args.use_amp:
+                scaler.scale(loss).backward()
+                scaler.step(model_optim)
+                scaler.update()
+            else:
+                loss.backward()
+                model_optim.step()
 
             logger.info(f"Epoch: {epoch + 1} cost time: {time.time() - epoch_time}")
             train_loss = np.average(train_loss)
             test_loss = self.test(test_loader=test_loader)
             log_train_epoch(epoch=epoch, train_steps=train_steps, test_loss=test_loss)
 
-            early_stopping(test_loss, self.model, path)
+            early_stopping(train_losses, train_loss, test_loss, self.model, path)
             if early_stopping.early_stop:
                 logger.info("Early stopping")
+                break
 
             scheduler.step()
-            # adjust_learning_rate(model_optim, epoch + 1, self.args)
-
         best_model_path = f"{path}/checkpoint.pth"
         self.model.load_state_dict(torch.load(best_model_path))
 

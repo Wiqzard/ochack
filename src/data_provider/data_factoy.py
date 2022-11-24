@@ -24,7 +24,7 @@ class SordiAiDatasetEval(ImageDataset):
     ) -> None:
         super().__init__(root_path, data_path, flag)
         self.height, self.width = 600, 1024
-        self.transforms = transforms or T.Resize((self.height, self.width))
+        self.transforms = transforms  # or T.Resize((self.height, self.width))
         self.flag = flag
 
         self._set_directory()
@@ -73,7 +73,7 @@ class SordiAiDataset(ImageDataset):
     ) -> None:
         super().__init__(root_path, data_path, flag)
         self.height, self.width = 600, 1024
-        self.transforms = transforms or T.Resize((self.height, self.width))
+        self.transforms = transforms  # or T.Resize((self.height, self.width))
         self.flag = flag
 
         self._set_directory()
@@ -142,14 +142,14 @@ class SordiAiDataset(ImageDataset):
                 target["Right"],
                 target["Bottom"],
             )
-            if self.transforms:
-                x1 = int(x1 * scale_width)
-                y1 = int(y1 * scale_height)
-                x2 = int(x2 * scale_width)
-                y2 = int(y2 * scale_height)
-
-            boxes.append([x1, y1, x2, y2])
-            labels.append(CLASSES[str(target["ObjectClassName"])])
+            # if self.transforms:
+            #     x1 = int(x1 * scale_width)
+            #    y1 = int(y1 * scale_height)
+            #    x2 = int(x2 * scale_width)
+            #    y2 = int(y2 * scale_height)
+            if x1 < x2 and y1 < y2:
+                boxes.append([x1, y1, x2, y2])
+                labels.append(CLASSES[str(target["ObjectClassName"])])
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
         labels = torch.as_tensor(labels, dtype=torch.int64)
 
@@ -166,9 +166,9 @@ class SordiAiDataset(ImageDataset):
         image = self.transforms(image) if self.transforms else image
         target, target_name = self.json_loader(path_target)
         target = self._transform_target(target)
+        target["image_id"] = torch.tensor([index])
         ##ASSERT NAMES EQUAL i.e. 22 == 22
         assert image_name == target_name, "file missmatch"
-        print(f"imgaename {image_name}")
         return image, target
 
 
