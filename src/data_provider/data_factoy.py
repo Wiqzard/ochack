@@ -46,20 +46,18 @@ class SordiAiDatasetEval(ImageDataset):
         return read_image(path_image)
 
     def image_loader(self, path: str) -> Image.Image:
+        _, image_name = os.path.split(path)
         with open(path, "rb") as f:
             img = Image.open(f)
-            return img.convert("RGB")
+            return img.convert("RGB"), image_name
 
     def __len__(self) -> int:
         return len(self.samples)
 
     def __getitem__(self, index: int) -> Tuple:
-        # image after transform 3 ,720, 1280
         path_image = self.samples[index]
-        image = self.image_loader(path_image)
+        image, image_name = self.image_loader(path_image)
         image = self.transforms(image) if self.transforms else image
-        # print(image.shape)
-        image_name, _ = os.path.split(path_image)
         image_width, image_height = 0, 0
 
         return image_name, image_width, image_height, image
@@ -88,7 +86,7 @@ class SordiAiDataset(ImageDataset):
                 continue
             path_to_data_part = os.path.join(self.DIRECTORY, dir)
 
-            for directory in os.listdir(path_to_data_part):
+            for directory in sorted(os.listdir(path_to_data_part)):
                 if falsy_path(directory=directory):
                     continue
                 directory = os.fsdecode(directory)
@@ -112,37 +110,50 @@ class SordiAiDataset(ImageDataset):
         return read_image(path_image)
 
     def image_loader(self, path: str) -> Image.Image:
+
+        _, file_name = os.path.split(path)
+        file_name_raw = file_name.split(".")[0]
         with open(path, "rb") as f:
-            img = Image.open(f)
-            img = self.transforms(img)
-            return img.convert("RGB")
+            img = Image.open(f).convert("RGB")
+            # img = self.transforms(img)
+            return img, file_name_raw
 
     def json_loader(self, path: str) -> Dict:
+        _, file_name = os.path.split(path)
+        file_name_raw = file_name.split(".")[0]
         with open(path, "rb") as json_file:
-            return json.load(json_file)
+            return json.load(json_file), file_name_raw
 
-    def _transform_label(self, label):
+    def _transform_target(self, targets):
         """
         transforms box dimensions if necessary
         transforms objects_ids
         """
-        # sourcery skip: inline-immediately-returned-variable
-        x1, y1, x2, y2 = label["Left"], label["Top"], label["Right"], label["Bottom"]
         scale_width = self.width / 1280
         scale_height = self.height / 720
-        x1 *= scale_width
-        y1 *= scale_height
-        x2 *= scale_width
-        y2 *= scale_height
-        targets = [
-            {
-                "boxes": torch.tensor(
-                    [label["Left"], label["Top"], label["Right"], label["Bottom"]]
-                ).unsqueeze(0),
-                "labels": torch.tensor([CLASSES[str(label["ObjectClassName"])]]),
-            }
-        ]
-        return targets
+
+        num_objs = len(targets)
+        boxes = []
+        labels = []
+        for target in targets:
+            x1, y1, x2, y2 = (
+                target["Left"],
+                target["Top"],
+                target["Right"],
+                target["Bottom"],
+            )
+            if self.transforms:
+                x1 = int(x1 * scale_width)
+                y1 = int(y1 * scale_height)
+                x2 = int(x2 * scale_width)
+                y2 = int(y2 * scale_height)
+
+            boxes.append([x1, y1, x2, y2])
+            labels.append(CLASSES[str(target["ObjectClassName"])])
+        boxes = torch.as_tensor(boxes, dtype=torch.float32)
+        labels = torch.as_tensor(labels, dtype=torch.int64)
+
+        return {"boxes": boxes, "labels": labels}
 
     def __len__(self) -> int:
         return len(self.samples)
@@ -150,11 +161,17 @@ class SordiAiDataset(ImageDataset):
     def __getitem__(self, index: int) -> Tuple:
         # image after transform 3 ,720, 1280
         # 3, 600, 1024
-        path_image, path_label = self.samples[index]
-        image = self.image_loader(path_image)
-        label = self.json_loader(path_label)[0]
-        # image = self.transforms(image)
-        # print(self.transforms)
-        # print(type(image))
-        label = self._transform_label(label)
-        return image, label
+        path_image, path_target = self.samples[index]
+        image, image_name = self.image_loader(path_image)
+        image = self.transforms(image) if self.transforms else image
+        target, target_name = self.json_loader(path_target)
+        target = self._transform_target(target)
+        ##ASSERT NAMES EQUAL i.e. 22 == 22
+        assert image_name == target_name, "file missmatch"
+        print(f"imgaename {image_name}")
+        return image, target
+
+
+# dataloader:
+# [B, C, H, W],
+# [B * Dict["labels": [NUM_OBJECTS], "boxes":[NUM_OBJECTS, 4]]]

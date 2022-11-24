@@ -10,6 +10,12 @@ from torchvision.utils import draw_bounding_boxes
 from torchvision.transforms.functional import to_pil_image
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
+import torchvision.transforms as T
+
+# import torchvision.detection
+
+# import torchvision.prototype.transforms as T
+
 weights = FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT
 model = fasterrcnn_resnet50_fpn_v2(weights=weights, box_score_thresh=0.9)
 
@@ -28,6 +34,24 @@ def create_model(num_classes: int):
     #     in_features=in_features, out_features=NUM_CLASSES*4, bias=True
     # )
     return model, weights
+
+
+# def get_transform():
+#    transforms = []
+#    transforms.append(T.Resize((600, 1024)))
+#    # transforms.append(T.PILToTensor())
+#    transforms.append(T.ToTensor())
+#    transforms.append(T.ConvertImageDtype(torch.float))
+#    return T.Compose(transforms)
+#
+
+
+def get_transform():
+    transforms = []
+    transforms.append(T.PILToTensor())
+    transforms.append(T.Resize((600, 1024)))
+    transforms.append(T.ConvertImageDtype(torch.float))
+    return T.Compose(transforms)
 
 
 # pretrained on the COCO set

@@ -124,3 +124,54 @@
             num_workers=args.num_workers,
             drop_last=drop_last,
         )
+
+
+        # transformed_targets = []
+        # # sourcery skip: inline-immediately-returned-variable
+        # for target in targets:  # i in range(len(targets)):
+        #     # target = targets[i]
+        #     x1, y1, x2, y2 = (
+        #         target["Left"],
+        #         target["Top"],
+        #         target["Right"],
+        #         target["Bottom"],
+        #     )
+        #     scale_width = self.width / 1280
+        #     scale_height = self.height / 720
+
+        #     x1 = int(x1 * scale_width)
+        #     y1 = int(y1 * scale_height)
+        #     x2 = int(x2 * scale_width)
+        #     y2 = int(y2 * scale_height)
+        #     target = {
+        #         "boxes": torch.tensor([x1, y1, x2, y2]).unsqueeze(0),
+        #         "labels": torch.tensor([CLASSES[str(target["ObjectClassName"])]]),
+        #     }
+        #    transformed_targets.append(target)
+        # transformed_targets = {"boxes": [], "labels": []}
+        # for target in targets:
+        #    x1, y1, x2, y2 = (
+        #        target["Left"],
+        #        target["Top"],
+        #        target["Right"],
+        #        target["Bottom"],
+        #    )
+        #    scale_width = self.width / 1280
+        #    scale_height = self.height / 720
+
+        #    x1 = int(x1 * scale_width)
+        #    y1 = int(y1 * scale_height)
+        #    x2 = int(x2 * scale_width)
+        #    y2 = int(y2 * scale_height)
+
+        #    # transformed_targets["boxes"].append(torch.tensor([x1, y1, x2, y2]))
+        #    # transformed_targets["labels"].append(
+        #    #    torch.tensor([CLASSES[str(target["ObjectClassName"])]])
+        #    # )
+        #    transformed_targets["boxes"].append([x1, y1, x2, y2])
+        #    transformed_targets["labels"].append(
+        #        [CLASSES[str(target["ObjectClassName"])]]
+        #    )
+        # print(type(transformed_targets["boxes"]))
+        # transformed_targets["boxes"] = torch.Tensor(transformed_targets["boxes"])
+        # transformed_targets["labels"] = torch.Tensor(transformed_targets["labels"])

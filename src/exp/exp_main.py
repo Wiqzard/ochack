@@ -9,7 +9,7 @@ from utils.tools import (
     log_train_progress,
     log_train_epoch,
     train_test_split,
-    write_to_csv
+    write_to_csv,
 )
 from utils.constants import CLASSES
 
@@ -77,27 +77,31 @@ class Exp_Main(Exp_Basic):
         )
         return data_set, data_loader
 
-    def _select_optimizer(self):
+    def _select_optimizer(self) -> None:
         args = self.args
         params = [p for p in self.model.parameters() if p.requires_grad]
         if args.optimizer == "adam":
             # sourcery skip: inline-immediately-returned-variable
-            model_optim = optim.Adam(
-                params, lr=args.learning_rate
-            )
+            model_optim = optim.Adam(params, lr=args.learning_rate)
         elif self.args.optimizer == "sgd":
             model_optim = optim.SGD(
                 params,
                 lr=args.learning_rate,
                 momentum=args.momentum,
-                weight_decay=args.weight_decay
-            )#optimizer = torch.optim.SGD(params, lr=0.001, momentum=0.9, nesterov=True)
+                weight_decay=args.weight_decay,
+            )  # optimizer = torch.optim.SGD(params, lr=0.001, momentum=0.9, nesterov=True)
         return model_optim
 
-    def _select_criterion(self):
+    def _select_criterion(self) -> None:
         # sourcery skip: inline-immediately-returned-variable
         criterion = nn.MSELoss()
         return criterion
+
+    def _select_scheduler(self, optimizer) -> None:
+        lr_scheduler = torch.optim.lr_scheduler.StepLR(
+            optimizer=optimizer, step_size=3, gamma=0.1
+        )
+        return lr_scheduler
 
     def test(self, test_data, test_loader, criterion) -> float:
         self.model.train()  # train????
@@ -114,9 +118,11 @@ class Exp_Main(Exp_Basic):
         self.model.eval()
         idx = 0
         _, eval_dataloader = self._get_data(flag="eval")
-        for i, (image_name, image_width, image_height, image) in tqdm(enumerate(eval_dataloader)):
+        for i, (image_name, image_width, image_height, image) in tqdm(
+            enumerate(eval_dataloader)
+        ):
             label = self.model(image)[0]
-            idx = write_to_csv(idx, image_name, image_width, image_height, label) 
+            idx = write_to_csv(idx, image_name, image_width, image_height, label)
 
     def _set_checkpoint(self, setting) -> str:
         path = os.path.join(self.args.checkpoints, setting)
@@ -142,6 +148,7 @@ class Exp_Main(Exp_Basic):
         early_stopping = EarlyStopping(patience=self.args.patience, verbose=True)
 
         model_optim = self._select_optimizer()
+        scheduler = self._select_scheduler(optimizer=model_optim)
         criterion = self._select_criterion()
 
         if self.args.use_amp:
@@ -190,7 +197,8 @@ class Exp_Main(Exp_Basic):
             if early_stopping.early_stop:
                 logger.info("Early stopping")
 
-            adjust_learning_rate(model_optim, epoch + 1, self.args)
+            scheduler.step()
+            # adjust_learning_rate(model_optim, epoch + 1, self.args)
 
         best_model_path = f"{path}/checkpoint.pth"
         self.model.load_state_dict(torch.load(best_model_path))

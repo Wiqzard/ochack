@@ -6,8 +6,9 @@ import torch
 from torchvision.utils import draw_bounding_boxes
 from torchvision.transforms.functional import to_pil_image
 import pandas as pd
-
+import cv2
 from utils.constants import CLASSES, CLASSES_ID
+import random
 
 # from data_provider.data_factoy import SordiAiDataset
 
@@ -28,6 +29,14 @@ def train_test_split(dataset, ratio: float = 0.8):
     return train_dataset, test_dataset
 
 
+def collate_fn(batch):
+    """
+    To handle the data loading as different images may have different number
+    of objects and to handle varying size tensors as well.
+    """
+    return tuple(zip(*batch))
+
+
 # if flag == "train":
 #     return train_dataset
 # elif flag == "test":
@@ -46,17 +55,23 @@ def transform_label(
     classes: Dict,
     labels: Dict,
 ) -> List[Dict]:  # sourcery skip: inline-immediately-returned-variable
-    targets = [
-        {
-            "boxes": torch.tensor([x1, y1, x2, y2]).unsqueeze(0),
-            "labels": torch.tensor([classes[str(label)]]),
-        }
-        for (x1, y1, x2, y2), label in zip(
-            zip(labels["Left"], labels["Top"], labels["Right"], labels["Bottom"]),
-            labels["ObjectClassName"],
-        )
-    ]
+    # targets = [
+    #    {
+    #        "boxes": torch.tensor([x1, y1, x2, y2]).unsqueeze(0),
+    #        "labels": torch.tensor([classes[str(label)]]),
+    #    }
+    #    for (x1, y1, x2, y2), label in zip(
+    #        zip(labels["Left"], labels["Top"], labels["Right"], labels["Bottom"]),
+    #        labels["ObjectClassName"],
+    #    )
+    # ]
+
     return targets
+
+
+def transform_target(targets) -> List[Dict]:
+    """Dict of list to list of dicts"""
+    return [dict(zip(targets, t)) for t in zip(*targets.values())]
 
 
 def adjust_learning_rate(optimizer, epoch, args):
@@ -123,14 +138,14 @@ def log_train_epoch(epoch, train_steps, train_loss, test_loss) -> None:
     )
 
 
-def log_loss(loss):
+def log_loss(loss) -> None:
     logger.info(
         f"""Classifier Loss: {loss["loss_classifier"]} --- Box-Reg Loss: {loss["loss_box_reg"]}  \n
             Objectness Loss: {loss["loss_objectness"]} --- RPN-Box-Reg Loss: {loss["loss_rpn_box_reg"]} """
     )
 
 
-def falsy_path(directory):
+def falsy_path(directory: str) -> bool:
     return bool(
         (
             directory.startswith(".")
@@ -176,6 +191,50 @@ def write_to_csv(idx, image_name, image_width, image_height, label) -> None:
                 }
                 csv_writer.writerow(row)
     return idx
+    # print(type(img))
+
+
+def show_tranformed_image(train_dataset, classes):
+    """
+    This function shows the transformed images from the `train_loader`.
+    Helps to check whether the tranformed images along with the corresponding
+    labels are correct or not.
+
+    """
+    colors = np.random.uniform(0, 1, size=(len(CLASSES), 3))
+    for i in range(2):
+        index = random.randint(0, len(train_dataset) - 1)
+        images, targets = train_dataset[index]  # next(iter(train_loader))
+        #        targets = transform_target(targets)
+        print(targets)
+        boxes = targets[i]["boxes"].cpu().numpy().astype(np.int32)
+        labels = targets[i]["labels"].cpu().numpy().astype(np.int32)
+        print(boxes)
+        print(labels)
+        # Get all the predicited class names.
+        classes_rev = {v: k for k, v in classes.items()}
+        pred_classes = classes_rev[labels]  # [classes_rev[label] for label in labels]
+        sample = images.permute(1, 2, 0).cpu().numpy()
+        sample = cv2.cvtColor(sample, cv2.COLOR_RGB2BGR)
+        for box_num, box in enumerate(boxes):
+            class_name = pred_classes[box_num]
+            color = colors[box_num]
+            cv2.rectangle(
+                sample, (box[0], box[1]), (box[2], box[3]), color, 2, cv2.LINE_AA
+            )
+            cv2.putText(
+                sample,
+                class_name,
+                (box[0], box[1] - 10),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1.0,
+                color,
+                2,
+                cv2.LINE_AA,
+            )
+        cv2.imshow("Transformed image", sample)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
 
 # row["detection_id"]
