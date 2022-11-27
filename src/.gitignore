@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 data/
 **/.DS_Store
-
+checkpoints/
 # C extensions
 *.so
 

@@ -21,8 +21,8 @@ python -u run.py \
   --loss 'mse' \
   --lradj 'type1' \
   --use_gpu True \
-  --gpu 0 \
-  --devices 0
+  --gpu 1 \
+  --devices 1
 
 
 

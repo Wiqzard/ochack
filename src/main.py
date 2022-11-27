@@ -49,7 +49,7 @@ print(next(iter(train_dataloder)))
 # batch = next(iter(train_dataloder))
 # print(batch)
 ## print(transform_label(CLASSES, batch[1][0]))
-show_tranformed_image(train_dataset, CLASSES)
+# show_tranformed_image(train_dataset, CLASSES)
 
 # show_tranformed_image(train_dataloder, CLASSES)
 
@@ -85,6 +85,7 @@ def train_model() -> None:
         #    targets = [{"boxes": boxes, "labels": labels}]
         #    prediction = model(image, targets)
         print(target)
+
         print(prediction)
 
 

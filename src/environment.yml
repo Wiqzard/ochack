@@ -1,4 +1,4 @@
-name: faster_rcnn 
+name: base 
 channels:
   - conda-forge
   - pytorch

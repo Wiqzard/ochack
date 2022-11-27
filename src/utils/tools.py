@@ -6,7 +6,8 @@ import torch
 from torchvision.utils import draw_bounding_boxes
 from torchvision.transforms.functional import to_pil_image
 import pandas as pd
-import cv2
+
+# import cv2
 from utils.constants import CLASSES, CLASSES_ID
 import random
 import matplotlib.pyplot as plt
@@ -238,48 +239,48 @@ def write_to_csv(idx, image_name, image_width, image_height, label) -> None:
     # print(type(img))
 
 
-def show_tranformed_image(train_dataset, classes):
-    """
-    This function shows the transformed images from the `train_loader`.
-    Helps to check whether the tranformed images along with the corresponding
-    labels are correct or not.
-
-    """
-    colors = np.random.uniform(0, 1, size=(200, 3))
-    for _ in range(2):
-        index = random.randint(0, len(train_dataset) - 1)
-        images, targets = train_dataset[index]  # next(iter(train_loader))
-        # targets = dict_list_to_list_dict(targets)
-        #        targets = transform_target(targets)
-        print(targets)
-        boxes = targets["boxes"].cpu().numpy().astype(np.int32)
-        labels = targets["labels"].cpu().numpy().astype(np.int32)
-        # Get all the predicited class names.
-        classes_rev = {v: k for k, v in classes.items()}
-        pred_classes = [
-            classes_rev[label] for label in labels
-        ]  # classes_rev[labels]  # [classes_rev[label] for label in labels]
-        sample = images.permute(1, 2, 0).cpu().numpy()
-        sample = cv2.cvtColor(sample, cv2.COLOR_RGB2BGR)
-        for box_num, box in enumerate(boxes):
-            class_name = pred_classes[box_num]
-            color = colors[box_num]
-            cv2.rectangle(
-                sample, (box[0], box[1]), (box[2], box[3]), color, 2, cv2.LINE_AA
-            )
-            cv2.putText(
-                sample,
-                class_name,
-                (box[0], box[1] - 10),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1.0,
-                color,
-                2,
-                cv2.LINE_AA,
-            )
-        cv2.imshow("Transformed image", sample)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+# def show_tranformed_image(train_dataset, classes):
+#    """
+#    This function shows the transformed images from the `train_loader`.
+#    Helps to check whether the tranformed images along with the corresponding
+#    labels are correct or not.
+#
+#    """
+#    colors = np.random.uniform(0, 1, size=(200, 3))
+#    for _ in range(2):
+#        index = random.randint(0, len(train_dataset) - 1)
+#        images, targets = train_dataset[index]  # next(iter(train_loader))
+#        # targets = dict_list_to_list_dict(targets)
+#        #        targets = transform_target(targets)
+#        print(targets)
+#        boxes = targets["boxes"].cpu().numpy().astype(np.int32)
+#        labels = targets["labels"].cpu().numpy().astype(np.int32)
+#        # Get all the predicited class names.
+#        classes_rev = {v: k for k, v in classes.items()}
+#        pred_classes = [
+#            classes_rev[label] for label in labels
+#        ]  # classes_rev[labels]  # [classes_rev[label] for label in labels]
+#        sample = images.permute(1, 2, 0).cpu().numpy()
+#        sample = cv2.cvtColor(sample, cv2.COLOR_RGB2BGR)
+#        for box_num, box in enumerate(boxes):
+#            class_name = pred_classes[box_num]
+#            color = colors[box_num]
+#            cv2.rectangle(
+#                sample, (box[0], box[1]), (box[2], box[3]), color, 2, cv2.LINE_AA
+#            )
+#            cv2.putText(
+#                sample,
+#                class_name,
+#                (box[0], box[1] - 10),
+#                cv2.FONT_HERSHEY_SIMPLEX,
+#                1.0,
+#                color,
+#                2,
+#                cv2.LINE_AA,
+#            )
+#        cv2.imshow("Transformed image", sample)
+#        cv2.waitKey(0)
+#        cv2.destroyAllWindows()
 
 
 # row["detection_id"]
