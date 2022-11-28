@@ -128,7 +128,7 @@ class EarlyStopping:
     def __call__(
         self, loss_dict_train, loss_dict_test, train_loss, val_loss, model, path
     ):
-        self.store_loss(loss_dict, train_loss, val_loss)
+        self.store_loss(loss_dict_train, loss_dict_test, train_loss, val_loss)
         score = -val_loss
         if self.best_score is None:
             self.best_score = score
