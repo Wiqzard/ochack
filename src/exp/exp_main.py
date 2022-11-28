@@ -183,14 +183,16 @@ class Exp_Main(Exp_Basic):
                 loss = sum(loss_dict.values())
                 train_loss.append(loss.detach().item())
                 train_losses["loss_classifier"].append(
-                    loss_dict["loss_classifier"].detach()
+                    loss_dict["loss_classifier"].detach().cpu()
                 )
-                train_losses["loss_box_reg"].append(loss_dict["loss_box_reg"].detach())
+                train_losses["loss_box_reg"].append(
+                    loss_dict["loss_box_reg"].detach().cpu()
+                )
                 train_losses["loss_objectness"].append(
-                    loss_dict["loss_objectness"].detach()
+                    loss_dict["loss_objectness"].detach().cpu()
                 )
                 train_losses["loss_rpn_box_reg"].append(
-                    loss_dict["loss_rpn_box_reg"].detach()
+                    loss_dict["loss_rpn_box_reg"].detach().cpu()
                 )
                 if (i + 1) % 100 == 0:
                     log_train_progress(
