@@ -217,7 +217,12 @@ class Exp_Main(Exp_Basic):
             logger.info(f"Epoch: {epoch + 1} cost time: {time.time() - epoch_time}")
             train_loss = np.average(train_loss)
             test_loss = self.test(test_loader=test_loader)
-            log_train_epoch(epoch=epoch, train_steps=train_steps, test_loss=test_loss)
+            log_train_epoch(
+                epoch=epoch,
+                train_steps=train_steps,
+                train_loss=train_loss,
+                test_loss=test_loss,
+            )
 
             early_stopping(train_losses, train_loss, test_loss, self.model, path)
             if early_stopping.early_stop:
