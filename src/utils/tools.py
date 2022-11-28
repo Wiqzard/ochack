@@ -157,33 +157,37 @@ class EarlyStopping:
     def log_loss(self, train=True) -> None:
         loss = self.train_losses if train else self.test_losses
         logger.info(
-            f"""Classifier Loss: {loss["loss_classifier"][-1]} --- Box-Reg Loss: {loss["loss_box_reg"][-1]}  \n
+            f"""Classifier Loss: {loss["loss_classifier"]} --- Box-Reg Loss: {loss["loss_box_reg"][-1]}  \n
             Objectness Loss: {loss["loss_objectness"][-1]} --- RPN-Box-Reg Loss: {loss["loss_rpn_box_reg"][-1]} """
         )
 
     def store_loss(self, loss_dict_train, loss_dict_test, train_loss, val_loss) -> None:
-        # self.train_losses["loss_classifier"].append(np.average(
-        #     loss_dict_train["loss_classifier"])
-        # )
-        # self.train_losses["loss_box_reg"].append(np.average(loss_dict_train["loss_box_reg"]))
-        # self.train_losses["loss_objectness"].append(np.average(
-        #     loss_dict_train["loss_objectness"])
-        # )
-        # self.train_losses["loss_rpn_box_reg"].append(np.average(
-        #     loss_dict_train["loss_rpn_box_reg"])
-        # )
-        # self.test_losses["loss_classifier"].append(np.average(
-        #     loss_dict_test["loss_classifier"])
-        # )
-        # self.test_losses["loss_box_reg"].append(np.average(loss_dict_test["loss_box_reg"]))
-        # self.test_losses["loss_objectness"].append(np.average(
-        #     loss_dict_test["loss_objectness"]
-        # ))
-        # self.test_losses["loss_rpn_box_reg"].append(np.average(
-        #     loss_dict_test["loss_rpn_box_reg"])
-        # )
-        self.train_losses = store_losses(self.train_losses, loss_dict_train)
-        self.test_losses = store_losses(self.test_losses, loss_dict_test)
+        self.train_losses["loss_classifier"].append(
+            np.average(loss_dict_train["loss_classifier"])
+        )
+        self.train_losses["loss_box_reg"].append(
+            np.average(loss_dict_train["loss_box_reg"])
+        )
+        self.train_losses["loss_objectness"].append(
+            np.average(loss_dict_train["loss_objectness"])
+        )
+        self.train_losses["loss_rpn_box_reg"].append(
+            np.average(loss_dict_train["loss_rpn_box_reg"])
+        )
+        self.test_losses["loss_classifier"].append(
+            np.average(loss_dict_test["loss_classifier"])
+        )
+        self.test_losses["loss_box_reg"].append(
+            np.average(loss_dict_test["loss_box_reg"])
+        )
+        self.test_losses["loss_objectness"].append(
+            np.average(loss_dict_test["loss_objectness"])
+        )
+        self.test_losses["loss_rpn_box_reg"].append(
+            np.average(loss_dict_test["loss_rpn_box_reg"])
+        )
+        # self.train_losses = store_losses(self.train_losses, loss_dict_train)
+        # self.test_losses = store_losses(self.test_losses, loss_dict_test)
         self.train_loss.append(train_loss)
         self.test_loss.append(val_loss)
 
