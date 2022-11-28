@@ -7,6 +7,7 @@ import random
 import sys
 from exp.exp_main import Exp_Main
 from utils.tools import logger
+from pathlib import Path
 
 
 def main():
@@ -106,7 +107,7 @@ def main():
 
     logger.info("Args in experiment:")
     logger.info(args)
-
+    Path(args.checkpoints).mkdir(parents=True, exist_ok=True)
     Exp = Exp_Main
 
     if args.is_training:
