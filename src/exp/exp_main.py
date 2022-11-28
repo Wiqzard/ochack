@@ -108,12 +108,13 @@ class Exp_Main(Exp_Basic):
 
     def _process_one_batch(self, image, label):
         # sourcery skip: inline-immediately-returned-variable
-        images = [image_.to(self.device) for image_ in image].to(self.device)
+        print(f"device: {self.device}")
+        images = [image_.to(self.device) for image_ in image]
         targets = [
             {k: v.to(self.device) for k, v in t.items() if k != "image_id"}
             for t in label
-        ].to(self.device)
-        images = list(image)
+        ]
+        # images = list(image)
         if self.args.use_amp:
             with torch.cuda.amp.autocast():
                 loss_dict = self.model(images, targets)
