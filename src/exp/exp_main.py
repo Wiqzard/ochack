@@ -127,7 +127,7 @@ class Exp_Main(Exp_Basic):
         with torch.no_grad():
             for image, label in test_loader:
                 loss = self._process_one_batch(image=image, label=label)
-                total_loss.append(sum(loss.detach().values()).item())
+                total_loss.append(sum(loss.values()).detach().item())
             total_loss = np.average(total_loss)
         self.model.train()
         return total_loss

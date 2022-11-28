@@ -172,7 +172,7 @@ def log_train_progress(args, time_now, loss, epoch, train_steps, i, iter_count) 
     )
     speed = (time.time() - time_now) / iter_count
     left_time = speed * ((args.train_epochs - epoch) * train_steps - i)
-    logger.info("\tspeed: {:.4f}s/iter; left time: {:.4f}s".format(speed, left_time))
+    # logger.info("\tspeed: {:.4f}s/iter; left time: {:.4f}s".format(speed, left_time))
 
 
 def log_train_epoch(epoch, train_steps, train_loss, test_loss) -> None:

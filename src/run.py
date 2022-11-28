@@ -81,6 +81,9 @@ def main():
         "--lradj", type=str, default="type1", help="adjust learning rate"
     )
     parser.add_argument(
+        "--use_amp", type=bool, default=False, help="use automatic mixed precision"
+    )
+    parser.add_argument(
         "--use_amp",
         action="store_true",
         help="use automatic mixed precision training",
