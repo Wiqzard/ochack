@@ -235,11 +235,12 @@ def log_train_epoch(epoch, train_steps, train_loss, test_loss) -> None:
     )
 
 
-def log_loss(loss) -> None:
-    logger.info(
-        f"""Classifier Loss: {loss["loss_classifier"]} --- Box-Reg Loss: {loss["loss_box_reg"]}  \n
-            Objectness Loss: {loss["loss_objectness"]} --- RPN-Box-Reg Loss: {loss["loss_rpn_box_reg"]} """
-    )
+#
+# def log_loss(loss) -> None:
+#    logger.info(
+#        f"""Classifier Loss: {loss["loss_classifier"]} --- Box-Reg Loss: {loss["loss_box_reg"]}  \n
+#            Objectness Loss: {loss["loss_objectness"]} --- RPN-Box-Reg Loss: {loss["loss_rpn_box_reg"]} """
+#    )
 
 
 def falsy_path(directory: str) -> bool:
