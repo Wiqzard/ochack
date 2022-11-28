@@ -11,6 +11,7 @@ from utils.tools import (
     train_test_split,
     write_to_csv,
     collate_fn,
+    store_losses,
 )
 from utils.constants import CLASSES
 
@@ -124,13 +125,20 @@ class Exp_Main(Exp_Basic):
     def test(self, test_loader) -> float:
         self.model.train()  # train????
         total_loss = []
+        test_losses = {
+            "loss_classifier": [],
+            "loss_box_reg": [],
+            "loss_objectness": [],
+            "loss_rpn_box_reg": [],
+        }
         with torch.no_grad():
             for image, label in test_loader:
                 loss = self._process_one_batch(image=image, label=label)
                 total_loss.append(sum(loss.values()).detach().item())
+                test_losses = store_losses(test_losses, loss)
             total_loss = np.average(total_loss)
         self.model.train()
-        return total_loss
+        return total_loss, test_losses
 
     def evaluation(self, setting) -> None:
         self.model.eval()
@@ -182,18 +190,19 @@ class Exp_Main(Exp_Basic):
                 loss_dict = self._process_one_batch(image=image, label=label)
                 loss = sum(loss_dict.values())
                 train_loss.append(loss.detach().item())
-                train_losses["loss_classifier"].append(
-                    loss_dict["loss_classifier"].detach().cpu()
-                )
-                train_losses["loss_box_reg"].append(
-                    loss_dict["loss_box_reg"].detach().cpu()
-                )
-                train_losses["loss_objectness"].append(
-                    loss_dict["loss_objectness"].detach().cpu()
-                )
-                train_losses["loss_rpn_box_reg"].append(
-                    loss_dict["loss_rpn_box_reg"].detach().cpu()
-                )
+                train_losses = store_losses(train_losses, loss_dict)
+                # train_losses["loss_classifier"].append(
+                #    loss_dict["loss_classifier"].detach().cpu()
+                # )
+                # train_losses["loss_box_reg"].append(
+                #    loss_dict["loss_box_reg"].detach().cpu()
+                # )
+                # train_losses["loss_objectness"].append(
+                #    loss_dict["loss_objectness"].detach().cpu()
+                # )
+                # train_losses["loss_rpn_box_reg"].append(
+                #    loss_dict["loss_rpn_box_reg"].detach().cpu()
+                # )
                 if (i + 1) % 100 == 0:
                     log_train_progress(
                         args=self.args,
@@ -218,7 +227,7 @@ class Exp_Main(Exp_Basic):
 
             logger.info(f"Epoch: {epoch + 1} cost time: {time.time() - epoch_time}")
             train_loss = np.average(train_loss)
-            test_loss = self.test(test_loader=test_loader)
+            test_loss, test_losses = self.test(test_loader=test_loader)
             log_train_epoch(
                 epoch=epoch,
                 train_steps=train_steps,
@@ -226,7 +235,9 @@ class Exp_Main(Exp_Basic):
                 test_loss=test_loss,
             )
 
-            early_stopping(train_losses, train_loss, test_loss, self.model, path)
+            early_stopping(
+                train_losses, test_losses, train_loss, test_loss, self.model, path
+            )
             if early_stopping.early_stop:
                 logger.info("Early stopping")
                 break

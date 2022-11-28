@@ -93,6 +93,14 @@ def adjust_learning_rate(optimizer, epoch, args):
         print(f"Updating learning rate to {lr}")
 
 
+def store_losses(storage: Dict, source: Dict) -> None:
+    storage["loss_classifier"].append(source["loss_classifier"].detach().cpu())
+    storage["loss_box_reg"].append(source["loss_box_reg"].detach().cpu())
+    storage["loss_objectness"].append(source["loss_objectness"].detach().cpu())
+    storage["loss_rpn_box_reg"].append(source["loss_rpn_box_reg"].detach().cpu())
+    return storage
+
+
 class EarlyStopping:
     def __init__(self, patience=7, verbose=False, delta=0):
         self.patience = patience
@@ -109,9 +117,17 @@ class EarlyStopping:
             "loss_objectness": [],
             "loss_rpn_box_reg": [],
         }
+        self.test_losses = {
+            "loss_classifier": [],
+            "loss_box_reg": [],
+            "loss_objectness": [],
+            "loss_rpn_box_reg": [],
+        }
         self.test_loss = []
 
-    def __call__(self, loss_dict, train_loss, val_loss, model, path):
+    def __call__(
+        self, loss_dict_train, loss_dict_test, train_loss, val_loss, model, path
+    ):
         self.store_loss(loss_dict, train_loss, val_loss)
         score = -val_loss
         if self.best_score is None:
@@ -128,12 +144,33 @@ class EarlyStopping:
             self.save_checkpoint(val_loss, model, path)
             self.counter = 0
 
-    def store_loss(self, loss_dict, train_loss, val_loss) -> None:
-        self.train_losses["loss_classifier"] = np.average(loss_dict["loss_classifier"])
-        self.train_losses["loss_box_reg"] = np.average(loss_dict["loss_box_reg"])
-        self.train_losses["loss_objectness"] = np.average(loss_dict["loss_objectness"])
+    def log_loss(self, train=True) -> None:
+        loss = self.train_losses if train else self.test_losses
+        logger.info(
+            f"""Classifier Loss: {loss["loss_classifier"][-1]} --- Box-Reg Loss: {loss["loss_box_reg"][-1]}  \n
+            Objectness Loss: {loss["loss_objectness"][-1]} --- RPN-Box-Reg Loss: {loss["loss_rpn_box_reg"][-1]} """
+        )
+
+    def store_loss(self, loss_dict_train, loss_dict_test, train_loss, val_loss) -> None:
+        self.train_losses["loss_classifier"] = np.average(
+            loss_dict_train["loss_classifier"]
+        )
+        self.train_losses["loss_box_reg"] = np.average(loss_dict_train["loss_box_reg"])
+        self.train_losses["loss_objectness"] = np.average(
+            loss_dict_train["loss_objectness"]
+        )
         self.train_losses["loss_rpn_box_reg"] = np.average(
-            loss_dict["loss_rpn_box_reg"]
+            loss_dict_train["loss_rpn_box_reg"]
+        )
+        self.test_losses["loss_classifier"] = np.average(
+            loss_dict_test["loss_classifier"]
+        )
+        self.test_losses["loss_box_reg"] = np.average(loss_dict_test["loss_box_reg"])
+        self.test_losses["loss_objectness"] = np.average(
+            loss_dict_test["loss_objectness"]
+        )
+        self.test_losses["loss_rpn_box_reg"] = np.average(
+            loss_dict_test["loss_rpn_box_reg"]
         )
 
         self.train_loss.append(train_loss)
