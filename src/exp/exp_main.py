@@ -214,7 +214,7 @@ class Exp_Main(Exp_Basic):
                     else:
                         loss.backward()
                         model_optim.step()
-                    pbar.updata()
+                    pbar.update()
 
             logger.info(f"Epoch: {epoch + 1} cost time: {time.time() - epoch_time}")
             train_loss = np.average(train_loss)
