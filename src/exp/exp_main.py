@@ -172,7 +172,7 @@ class Exp_Main(Exp_Basic):
 
             self.model.train()
             epoch_time = time.time()
-            with tqdm(toatl=len(train_loader), position=0, leave=True) as pbar:
+            with tqdm(total=len(train_loader), position=0, leave=True) as pbar:
                 for i, (image, label) in tqdm(
                     enumerate(train_loader), position=0, leave=True
                 ):
