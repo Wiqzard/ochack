@@ -157,7 +157,7 @@ class EarlyStopping:
     def log_loss(self, train=True) -> None:
         loss = self.train_losses if train else self.test_losses
         logger.info(
-            f"""Classifier Loss: {round(loss["loss_classifier"], 7)} --- Box-Reg Loss: {round(loss["loss_box_reg"][-1], 7)}  \n
+            f"""Classifier Loss: {round(loss["loss_classifier"][-1], 7)} --- Box-Reg Loss: {round(loss["loss_box_reg"][-1], 7)}  \n
             Objectness Loss: {round(loss["loss_objectness"][-1], 7)} --- RPN-Box-Reg Loss: {round(loss["loss_rpn_box_reg"][-1],7)} """
         )
 

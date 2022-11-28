@@ -107,7 +107,7 @@ def main():
 
     logger.info("Args in experiment:")
     logger.info(args)
-    Path(args.checkpoints).mkdir(parents=True, exist_ok=True)
+    # Path(args.checkpoints).mkdir(parents=True, exist_ok=True)
     Exp = Exp_Main
 
     if args.is_training:
