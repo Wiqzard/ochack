@@ -172,49 +172,47 @@ class Exp_Main(Exp_Basic):
 
             self.model.train()
             epoch_time = time.time()
-            with tqdm(total=len(train_loader), position=0, leave=True) as pbar:
-                for i, (image, label) in tqdm(
-                    enumerate(train_loader), position=0, leave=True
-                ):
-                    iter_count += 1
-                    model_optim.zero_grad()
+            # with tqdm(total=len(train_loader), position=0, leave=True) as pbar:
+            for i, (image, label) in tqdm(
+                enumerate(train_loader), total=len(train_loader), position=0, leave=True
+            ):
+                iter_count += 1
+                model_optim.zero_grad()
 
-                    loss_dict = self._process_one_batch(image=image, label=label)
-                    loss = sum(loss_dict.values())
-                    train_loss.append(loss.detach().item())
-                    train_losses["loss_classifier"].append(
-                        loss_dict["loss_classifier"].detach()
+                loss_dict = self._process_one_batch(image=image, label=label)
+                loss = sum(loss_dict.values())
+                train_loss.append(loss.detach().item())
+                train_losses["loss_classifier"].append(
+                    loss_dict["loss_classifier"].detach()
+                )
+                train_losses["loss_box_reg"].append(loss_dict["loss_box_reg"].detach())
+                train_losses["loss_objectness"].append(
+                    loss_dict["loss_objectness"].detach()
+                )
+                train_losses["loss_rpn_box_reg"].append(
+                    loss_dict["loss_rpn_box_reg"].detach()
+                )
+                if (i + 1) % 100 == 0:
+                    log_train_progress(
+                        args=self.args,
+                        time_now=time_now,
+                        loss=loss,
+                        epoch=epoch,
+                        train_steps=train_steps,
+                        i=i,
+                        iter_count=iter_count,
                     )
-                    train_losses["loss_box_reg"].append(
-                        loss_dict["loss_box_reg"].detach()
-                    )
-                    train_losses["loss_objectness"].append(
-                        loss_dict["loss_objectness"].detach()
-                    )
-                    train_losses["loss_rpn_box_reg"].append(
-                        loss_dict["loss_rpn_box_reg"].detach()
-                    )
-                    if (i + 1) % 100 == 0:
-                        log_train_progress(
-                            args=self.args,
-                            time_now=time_now,
-                            loss=loss,
-                            epoch=epoch,
-                            train_steps=train_steps,
-                            i=i,
-                            iter_count=iter_count,
-                        )
 
-                        iter_count = 0
-                        time_now = time.time()
-                    if self.args.use_amp:
-                        scaler.scale(loss).backward()
-                        scaler.step(model_optim)
-                        scaler.update()
-                    else:
-                        loss.backward()
-                        model_optim.step()
-                    pbar.update()
+                    iter_count = 0
+                    time_now = time.time()
+                if self.args.use_amp:
+                    scaler.scale(loss).backward()
+                    scaler.step(model_optim)
+                    scaler.update()
+                else:
+                    loss.backward()
+                    model_optim.step()
+            #        pbar.update()
 
             logger.info(f"Epoch: {epoch + 1} cost time: {time.time() - epoch_time}")
             train_loss = np.average(train_loss)
