@@ -128,7 +128,7 @@ class Exp_Main(Exp_Basic):
         with torch.no_grad():
             for image, label in test_loader:
                 loss = self._process_one_batch(image=image, label=label)
-                total_loss.append(sum(loss.values()).item())
+                total_loss.append(sum(loss.detach().values()).item())
             total_loss = np.average(total_loss)
         self.model.train()
         return total_loss
@@ -179,11 +179,17 @@ class Exp_Main(Exp_Basic):
 
                 loss_dict = self._process_one_batch(image=image, label=label)
                 loss = sum(loss_dict.values())
-                train_loss.append(loss.item())
-                train_losses["loss_classifier"].append(loss_dict["loss_classifier"])
-                train_losses["loss_box_reg"].append(loss_dict["loss_box_reg"])
-                train_losses["loss_objectness"].append(loss_dict["loss_objectness"])
-                train_losses["loss_rpn_box_reg"].append(loss_dict["loss_rpn_box_reg"])
+                train_loss.append(loss.detach().item())
+                train_losses["loss_classifier"].append(
+                    loss_dict["loss_classifier"].detach()
+                )
+                train_losses["loss_box_reg"].append(loss_dict["loss_box_reg"].detach())
+                train_losses["loss_objectness"].append(
+                    loss_dict["loss_objectness"].detach()
+                )
+                train_losses["loss_rpn_box_reg"].append(
+                    loss_dict["loss_rpn_box_reg"].detach()
+                )
                 if (i + 1) % 100 == 0:
                     log_train_progress(
                         args=self.args,
