@@ -6,7 +6,7 @@ data/
 checkpoints/
 # C extensions
 *.so
-.vscode
+.vscode/
 # Distribution / packaging
 bin/
 build/
