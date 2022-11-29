@@ -11,7 +11,7 @@ python -u run.py \
   --batch_size 3 \
   --num_workers 0 \
   --itr 1 \
-  --train_epochs 2 \
+  --train_epochs 500 \
   --patience 7 \
   --optimizer "sgd" \
   --momentum 0.9 \
@@ -21,13 +21,12 @@ python -u run.py \
   --loss 'mse' \
   --lradj 'type1' \
   --use_gpu True \
+  --use_amp True \
   --gpu 1 \
+  
   --devices 1
-
-
-
   --use_multi_gpu False \
-  --use_amp False \
+ 
 
 
 python -u run.py \
