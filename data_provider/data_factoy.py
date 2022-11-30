@@ -172,7 +172,7 @@ class SordiAiDataset(ImageDataset):
             #    y2 = int(y2 * scale_height)
             if (
                 x1 < x2 and y1 < y2
-            ):  # and (x2 - x1) * (y2 - y1) < self.box_area_threshold:
+            ):  # and (x2 - x1) * (y2 - y1) > self.box_area_threshold:
 
                 boxes.append([x1, y1, x2, y2])
                 labels.append(CLASSES[str(target["ObjectClassName"])])
