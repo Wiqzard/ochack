@@ -99,7 +99,7 @@ class Exp_Main(Exp_Basic):
 
     def _select_scheduler(self, optimizer) -> None:
         lr_scheduler = torch.optim.lr_scheduler.StepLR(
-            optimizer=optimizer, step_size=3, gamma=0.1
+            optimizer=optimizer, step_size=3, gamma=0.9
         )
         return lr_scheduler
 
@@ -171,7 +171,6 @@ class Exp_Main(Exp_Basic):
             scaler = torch.cuda.amp.GradScaler()
 
         for epoch in range(self.args.train_epochs):
-            iter_count = 0
             train_loss = []
             train_losses = {
                 "loss_classifier": [],
@@ -232,7 +231,6 @@ class Exp_Main(Exp_Basic):
             if early_stopping.early_stop:
                 logger.info("Early stopping")
                 break
-            print(scheduler.get_last_lr())
             scheduler.step()
         best_model_path = f"{path}/checkpoint.pth"
         self.model.load_state_dict(torch.load(best_model_path))
