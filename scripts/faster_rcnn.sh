@@ -6,6 +6,8 @@ python -u run.py \
   --model Faster_RCNN\
   --data custom \
   --root_path ./data/ \
+  --ignore_redundant \
+  --partion_single_assets 2 \
   --ratio 0.8 \
   --checkpoints ./checkpoints/ \
   --batch_size 3 \

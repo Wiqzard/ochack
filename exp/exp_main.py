@@ -215,7 +215,9 @@ class Exp_Main(Exp_Basic):
                     model_optim.step()
             #        pbar.update()
 
-            logger.info(f"Epoch: {epoch + 1} cost time: {time.time() - epoch_time}")
+            logger.info(
+                f"Epoch: {epoch + 1} cost time: {time.time() - epoch_time} learning rate:{scheduler.get_lr()}"
+            )
             train_loss = np.average(train_loss)
             test_loss, test_losses = self.test(test_loader=test_loader)
             log_train_epoch(
