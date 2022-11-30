@@ -8,7 +8,7 @@ from torchvision.io.image import read_image
 import sys
 import torchvision.transforms as T
 from data_provider.data_set import ImageDataset
-from utils.tools import falsy_path
+from utils.tools import falsy_path, check_area
 from utils.constants import CLASSES
 
 sys.path.insert(0, "/Users/sebastian/Documents/Projects/sordi_ai/src")
@@ -120,7 +120,11 @@ class SordiAiDataset(ImageDataset):
                     if image_name == label_name:
                         image = os.path.join(images_path, image)
                         label = os.path.join(labels_path, label)
-                        instances.append((image, label))
+                        # check area
+                        if check_area(
+                            label_path=label, area_threshold=self.box_area_threshold
+                        ):
+                            instances.append((image, label))
 
         return instances
 
@@ -166,7 +170,9 @@ class SordiAiDataset(ImageDataset):
             #    y1 = int(y1 * scale_height)
             #    x2 = int(x2 * scale_width)
             #    y2 = int(y2 * scale_height)
-            if x1 < x2 and y1 < y2 and (x2 - x1) * (y2 - y1) < self.box_area_threshold:
+            if (
+                x1 < x2 and y1 < y2
+            ):  # and (x2 - x1) * (y2 - y1) < self.box_area_threshold:
 
                 boxes.append([x1, y1, x2, y2])
                 labels.append(CLASSES[str(target["ObjectClassName"])])

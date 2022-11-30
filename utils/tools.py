@@ -299,8 +299,22 @@ def write_to_csv(idx, image_name, image_width, image_height, label) -> None:
     # print(type(img))
 
 
-# def show_tranformed_image(train_dataset, classes):
-#    """
+import os
+import json
+
+
+def check_area(label_path: str, area_threshold: float) -> bool:
+    with open(label_path, "rb") as json_file:
+        meta_data = json.load(json_file)
+        x1, y1, x2, y2 = (
+            meta_data["Left"],
+            meta_data["Top"],
+            meta_data["Right"],
+            meta_data["Bottom"],
+        )
+        return (x2 - x1) * (y2 - y1) > area_threshold
+
+
 #    This function shows the transformed images from the `train_loader`.
 #    Helps to check whether the tranformed images along with the corresponding
 #    labels are correct or not.
