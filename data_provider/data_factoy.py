@@ -172,7 +172,7 @@ class SordiAiDataset(ImageDataset):
                 labels.append(CLASSES[str(target["ObjectClassName"])])
         if not boxes:
             boxes = torch.as_tensor([0, 0, 1280, 720], dtype=torch.float32)
-            labels = torch.as_tensor(["__background__"], dtype=torch.float32)
+            labels = torch.as_tensor([0], dtype=torch.float32)
         else:
             boxes = torch.as_tensor(boxes, dtype=torch.float32)
             labels = torch.as_tensor(labels, dtype=torch.int64)
