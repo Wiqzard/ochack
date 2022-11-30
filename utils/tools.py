@@ -306,13 +306,18 @@ import json
 def check_area(label_path: str, area_threshold: float) -> bool:
     with open(label_path, "rb") as json_file:
         meta_data = json.load(json_file)
-        x1, y1, x2, y2 = (
-            meta_data["Left"],
-            meta_data["Top"],
-            meta_data["Right"],
-            meta_data["Bottom"],
-        )
-        return (x2 - x1) * (y2 - y1) > area_threshold
+        removed_labels = 0
+        # if all targets are
+        for target in meta_data:
+            x1, y1, x2, y2 = (
+                target["Left"],
+                target["Top"],
+                target["Right"],
+                target["Bottom"],
+            )
+            if (x2 - x1) * (y2 - y1) < area_threshold:
+                removed_labels += 1
+        return len(meta_data) > removed_labels
 
 
 #    This function shows the transformed images from the `train_loader`.
