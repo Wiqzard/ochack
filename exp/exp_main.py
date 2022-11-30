@@ -233,7 +233,6 @@ class Exp_Main(Exp_Basic):
                 logger.info("Early stopping")
                 break
             print(scheduler.get_last_lr())
-            scheduler.print_lr()
             scheduler.step()
         best_model_path = f"{path}/checkpoint.pth"
         self.model.load_state_dict(torch.load(best_model_path))
