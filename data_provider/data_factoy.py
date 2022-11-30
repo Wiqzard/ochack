@@ -176,9 +176,7 @@ class SordiAiDataset(ImageDataset):
         else:
             boxes = torch.as_tensor(boxes, dtype=torch.float32)
             labels = torch.as_tensor(labels, dtype=torch.int64)
-        if len(boxes.shape) == 1:
-            boxes = boxes.unsqueeze(0)
-            labels = labels.unsqueeze(0)
+
         return {"boxes": boxes, "labels": labels}
 
     def __len__(self) -> int:
