@@ -94,7 +94,6 @@ class SordiAiDataset(ImageDataset):
             if falsy_path(directory=dir):
                 continue
             path_to_data_part = os.path.join(self.DIRECTORY, dir)
-
             for directory in sorted(os.listdir(path_to_data_part)):
                 if falsy_path(directory=directory):
                     continue
@@ -108,14 +107,17 @@ class SordiAiDataset(ImageDataset):
                 images_paths = sorted(os.listdir(images_path))
                 labels_paths = sorted(os.listdir(labels_path))
 
-                for image, label in zip(images_paths, labels_paths):
+                for idx, (image, label) in enumerate(zip(images_paths, labels_paths)):
                     if image.startswith(".") or label.startswith("."):
                         continue
-                    image_name, label_name = image.split(".")[0], label.split(".")[0]
                     if (
-                        image_name == label_name
-                        and int(image_name) % self.partion_single_assets == 0
+                        dir == "SORDI_2022_Single_Assets"
+                        and idx % self.partion_single_assets != 0
                     ):
+                        continue
+                    image_name, label_name = image.split(".")[0], label.split(".")[0]
+                    # print(image_name, label_name)
+                    if image_name == label_name:
                         image = os.path.join(images_path, image)
                         label = os.path.join(labels_path, label)
                         instances.append((image, label))
@@ -168,8 +170,12 @@ class SordiAiDataset(ImageDataset):
 
                 boxes.append([x1, y1, x2, y2])
                 labels.append(CLASSES[str(target["ObjectClassName"])])
-        boxes = torch.as_tensor(boxes, dtype=torch.float32)
-        labels = torch.as_tensor(labels, dtype=torch.int64)
+        if not boxes:
+            boxes = torch.as_tensor([0, 0, 1280, 720], dtype=torch.float32)
+            labels = torch._as_tensor(["__background__"], dtype=torch.float32)
+        else:
+            boxes = torch.as_tensor(boxes, dtype=torch.float32)
+            labels = torch.as_tensor(labels, dtype=torch.int64)
 
         return {"boxes": boxes, "labels": labels}
 

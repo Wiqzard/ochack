@@ -9,7 +9,7 @@ from typing import Dict, List
 from utils.tools import (
     transform_label,
     train_test_split,
-    show_tranformed_image,
+    # show_tranformed_image,
     collate_fn,
     dotdict,
 )
@@ -22,7 +22,10 @@ model, weights = create_model(len(CLASSES))
 preprocess = weights.transforms()
 
 full_dataset = SordiAiDataset(
-    root_path="./data/", transforms=get_transform()
+    root_path="./data/",
+    transforms=get_transform(),
+    ignore_redundant=False,
+    partion_single_assets=1,
 )  # , transforms=preprocess)
 train_dataset, test_dataset = train_test_split(full_dataset, 0.8)
 
@@ -35,7 +38,8 @@ train_dataloder = DataLoader(
     drop_last=config["drop_last"],
     collate_fn=collate_fn,
 )
-print(next(iter(train_dataloder)))
+print(len(full_dataset))
+# print(next(iter(train_dataloder)))
 
 # print(len(full_dataset))
 # print(trafo(full_dataset[-1][1]))
