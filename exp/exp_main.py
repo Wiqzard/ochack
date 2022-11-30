@@ -60,8 +60,8 @@ class Exp_Main(Exp_Basic):
             full_dataset = SordiAiDataset(
                 root_path=args.root_path,
                 transforms=get_transform(),
-                partion_single_assets=args.partion_single_assets
-                ignore_redundant=args.ignore_redundant
+                partion_single_assets=args.partion_single_assets,
+                ignore_redundant=args.ignore_redundant,
             )
             train_dataset, test_dataset = train_test_split(
                 dataset=full_dataset, ratio=args.ratio
