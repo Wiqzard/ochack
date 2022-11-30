@@ -10,8 +10,8 @@ python -u run.py \
   --partion_single_assets 2 \
   --ratio 0.8 \
   --checkpoints ./checkpoints/ \
-  --batch_size 3 \
-  --num_workers 0 \
+  --batch_size 2 \
+  --num_workers 6 \
   --itr 1 \
   --train_epochs 500 \
   --patience 7 \

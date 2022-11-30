@@ -181,6 +181,7 @@ class Exp_Main(Exp_Basic):
 
             self.model.train()
             epoch_time = time.time()
+            iter_count = 0
             for i, (image, label) in tqdm(
                 enumerate(train_loader), total=len(train_loader), position=0, leave=True
             ):
