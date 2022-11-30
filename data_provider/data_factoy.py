@@ -71,7 +71,7 @@ class SordiAiDataset(ImageDataset):
         transforms=None,
         flag="train",
         ignore_redundant=False,
-        partion_single_assets=False,
+        partion_single_assets=1,
     ) -> None:
         super().__init__(root_path, data_path, flag)
         self.height, self.width = 600, 1024
