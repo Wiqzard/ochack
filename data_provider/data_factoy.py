@@ -114,7 +114,7 @@ class SordiAiDataset(ImageDataset):
                     image_name, label_name = image.split(".")[0], label.split(".")[0]
                     if (
                         image_name == label_name
-                        and image_name % self.partion_single_assets == 0
+                        and int(image_name) % self.partion_single_assets == 0
                     ):
                         image = os.path.join(images_path, image)
                         label = os.path.join(labels_path, label)
