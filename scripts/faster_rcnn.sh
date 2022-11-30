@@ -23,7 +23,7 @@ python -u run.py \
   --loss 'mse' \
   --lradj 'type1' \
   --use_gpu True \
-  --use_amp True \
+  --use_amp  \
   --gpu 1 \
   
   --devices 1

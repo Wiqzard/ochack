@@ -234,10 +234,10 @@ def log_train_progress(args, time_now, loss, epoch, train_steps, i, iter_count) 
     # logger.info("\tspeed: {:.4f}s/iter; left time: {:.4f}s".format(speed, left_time))
 
 
-def log_train_epoch(epoch, train_steps, train_loss, test_loss) -> None:
+def log_train_epoch(epoch, train_steps, train_loss, test_loss, scheduler) -> None:
     logger.info(
-        "Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Test Loss: {3:.7f}".format(
-            epoch + 1, train_steps, train_loss, test_loss
+        "Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Test Loss: {3:.7f} Learning Rate {4:.7f}".format(
+            epoch + 1, train_steps, train_loss, test_loss, scheduler
         )
     )
 
