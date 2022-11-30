@@ -70,12 +70,21 @@ class SordiAiDataset(ImageDataset):
         data_path: str = "train",
         transforms=None,
         flag="train",
+        ignore_redundant=False,
+        partion_single_assets=False,
     ) -> None:
         super().__init__(root_path, data_path, flag)
         self.height, self.width = 600, 1024
         self.transforms = transforms  # or T.Resize((self.height, self.width))
         self.flag = flag
-
+        self.ignore_redundant = ignore_redundant
+        self.partion_single_assets = partion_single_assets
+        self.redundant_directories = [
+            "SORDI_2022_h4020_warehouse",
+            "SORDI_2022_h4019_KLT stack",
+            "SORDI_2022_h4018_KLT on rack",
+        ]
+        self.box_area_threshold = 1000
         self._set_directory()
         self.samples = self._make_dataset()
 
@@ -89,6 +98,8 @@ class SordiAiDataset(ImageDataset):
             for directory in sorted(os.listdir(path_to_data_part)):
                 if falsy_path(directory=directory):
                     continue
+                if self.ignore_redundant and directory in self.redundant_directories:
+                    continue
                 directory = os.fsdecode(directory)
                 # images, labels
                 images_path = os.path.join(path_to_data_part, directory, "images")
@@ -100,9 +111,15 @@ class SordiAiDataset(ImageDataset):
                 for image, label in zip(images_paths, labels_paths):
                     if image.startswith(".") or label.startswith("."):
                         continue
-                    image = os.path.join(images_path, image)
-                    label = os.path.join(labels_path, label)
-                    instances.append((image, label))
+                    image_name, label_name = image.split(".")[0], label.split(".")[0]
+                    if (
+                        image_name == label_name
+                        and image_name % self.partion_single_assets == 0
+                    ):
+                        image = os.path.join(images_path, image)
+                        label = os.path.join(labels_path, label)
+                        instances.append((image, label))
+
         return instances
 
     def get_raw_image(self, index: int) -> torch.Tensor:
@@ -147,7 +164,8 @@ class SordiAiDataset(ImageDataset):
             #    y1 = int(y1 * scale_height)
             #    x2 = int(x2 * scale_width)
             #    y2 = int(y2 * scale_height)
-            if x1 < x2 and y1 < y2:
+            if x1 < x2 and y1 < y2 and (x2 - x1) * (y2 - y1) < self.box_area_threshold:
+
                 boxes.append([x1, y1, x2, y2])
                 labels.append(CLASSES[str(target["ObjectClassName"])])
         boxes = torch.as_tensor(boxes, dtype=torch.float32)

@@ -44,6 +44,18 @@ def main():
     #    "--data_path", type=str, default="SORDI_2022_Single_Assets", help="data file"
     # )
     parser.add_argument(
+        "--ignore_redundant",
+        action="store_true",
+        default=False,
+        help="ignore warehouse, on stack, on rack data",
+    )
+    parser.add_argument(
+        "--partion_single_assets",
+        type=int,
+        default=1,
+        help="only use every n'th image from single assets",
+    )
+    parser.add_argument(
         "--ratio", type=float, default=0.8, help="train-test split ratio"
     )
     parser.add_argument(
