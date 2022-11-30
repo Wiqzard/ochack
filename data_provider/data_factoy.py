@@ -166,13 +166,15 @@ class SordiAiDataset(ImageDataset):
             #    y1 = int(y1 * scale_height)
             #    x2 = int(x2 * scale_width)
             #    y2 = int(y2 * scale_height)
-            if x1 < x2 and y1 < y2 and (x2 - x1) * (y2 - y1) > self.box_area_threshold:
+            if x1 < x2 and y1 < y2 and (x2 - x1) * (y2 - y1) < self.box_area_threshold:
 
                 boxes.append([x1, y1, x2, y2])
                 labels.append(CLASSES[str(target["ObjectClassName"])])
         if not boxes:
-            boxes = torch.as_tensor([0, 0, 1280, 720], dtype=torch.float32).unsqueeze(0)
-            labels = torch.as_tensor([0], dtype=torch.int64).unsqueeze(0)
+            boxes = torch.as_tensor(
+                [0, 0, 1280, 720], dtype=torch.float32
+            )  # .unsqueeze(0)
+            labels = torch.as_tensor([0], dtype=torch.int64)  # .unsqueeze(0)
         else:
             boxes = torch.as_tensor(boxes, dtype=torch.float32)
             labels = torch.as_tensor(labels, dtype=torch.int64)
