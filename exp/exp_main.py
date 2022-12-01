@@ -193,7 +193,7 @@ class Exp_Main(Exp_Basic):
                 train_loss.append(loss.detach().item())
                 train_losses = store_losses(train_losses, loss_dict)
 
-                # if (i + 1) % 100 == 0:
+                # if (i + 1) % 300 == 0:
                 #    log_train_progress(
                 #        args=self.args,
                 #        time_now=time_now,

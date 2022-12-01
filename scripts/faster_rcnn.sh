@@ -11,7 +11,7 @@ python -u run.py \
   --ratio 0.8 \
   --checkpoints ./checkpoints/ \
   --batch_size 2 \
-  --num_workers 6 \
+  --num_workers 2 \
   --itr 1 \
   --train_epochs 500 \
   --patience 7 \
