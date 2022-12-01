@@ -43,3 +43,12 @@ def setup(args):
     if not args.use_gpu:
         cfg.MODEL.DEVICE = "cpu"
     return cfg
+
+
+# def show_image():
+#    dataset_dicts = dataset_function("train")
+#    for d in random.sample(dataset_dicts, 3):
+#        img = cv2.imread(d["file_name"])
+#        visualizer = Visualizer(img[:, :, ::-1], metadata=train_metadata, scale=0.5)
+#        out = visualizer.draw_dataset_dict(d)
+#        cv2_imshow(out.get_image()[:, :, ::-1])
