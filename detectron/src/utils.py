@@ -36,8 +36,10 @@ def setup(args):
     cfg.SOLVER.BASE_LR = args.base_lr
     cfg.SOLVER.MAX_ITER = args.max_iter
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = (
-        args.batch_per_image
+        args.batch_per_img
     )  # faster, and good enough for this toy dataset (default: 512)
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 17
     cfg.TEST.EVAL_PERIOD = args.eval_period
+    if not args.use_gpu:
+        cfg.MODEL.DEVICE = "cpu"
     return cfg

@@ -5,8 +5,8 @@ import os
 from detectron2.structures.boxes import BoxMode
 from detectron2.data import DatasetCatalog, MetadataCatalog
 
-from utils import falsy_path
-from constants import CLASSES, CLASSES_DICT
+from detectron.src.utils import falsy_path
+from detectron.src.constants import CLASSES, CLASSES_DICT
 
 
 class DataSet:

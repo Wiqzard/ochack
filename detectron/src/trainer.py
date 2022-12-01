@@ -6,7 +6,7 @@ from detectron2.evaluation import COCOEvaluator
 from detectron2.data import DatasetMapper, build_detection_test_loader
 
 
-from hooks import LossEvalHook
+from detectron.src.hooks import LossEvalHook
 
 
 class MyTrainer(DefaultTrainer):

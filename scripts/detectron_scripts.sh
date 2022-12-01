@@ -14,3 +14,4 @@ python -u main.py \
     --max_iter 3000 \
     --batch_per_img 512 \
     --eval_period 100 \
+    --use_gpu
