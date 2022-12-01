@@ -26,8 +26,8 @@ def setup(args):
     """
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(args.model))
-    cfg.DATASETS.TRAIN = "data_train"
-    cfg.DATASETS.TEST = "data_val"
+    cfg.DATASETS.TRAIN = ("data_train",)
+    cfg.DATASETS.TEST = ("data_val",)
     cfg.DATALOADER.NUM_WORKERS = args.num_workers
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
         args.model
