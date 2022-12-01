@@ -6,7 +6,7 @@ from detectron2.evaluation import COCOEvaluator
 from detectron2.data import DatasetMapper, build_detection_test_loader
 
 
-from detectron.src.hooks import LossEvalHook
+from detectron.src.custom_hooks import LossEvalHook
 
 
 class MyTrainer(DefaultTrainer):
@@ -24,7 +24,7 @@ class MyTrainer(DefaultTrainer):
                 self.cfg.TEST.EVAL_PERIOD,
                 self.model,
                 build_detection_test_loader(
-                    self.cfg, self.cfg.DATASETS.TEST, DatasetMapper(self.cfg, True)
+                    self.cfg, self.cfg.DATASETS.TEST[0], DatasetMapper(self.cfg, True)
                 ),
             ),
         )
