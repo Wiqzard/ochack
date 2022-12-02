@@ -41,7 +41,7 @@ def main():  # sourcery skip: extract-method
     parser = argparse.ArgumentParser(description="Warehouse [Object Classification]")
 
     parser.add_argument(
-        "--is_training", type=int, required=True, default=1, help="status"
+        "--is_training", type=bool, required=True, default=True, help="status"
     )
     parser.add_argument(
         "--resume",
@@ -49,7 +49,9 @@ def main():  # sourcery skip: extract-method
         default=False,
         help="resume training from checkpoint",
     )
-
+    parser.add_argument(
+        "--writer_period", type=int, required=False, default=100, help="period to log"
+    )
     #   <------------- data loader ------------->
     parser.add_argument(
         "--root_path",
@@ -96,7 +98,7 @@ def main():  # sourcery skip: extract-method
         "--num_workers", type=int, default=4, help="dataloader number of workers"
     )
     parser.add_argument("--ims_per_batch", type=int, default=2, help="batch size")
-    parser.add_argument("--base_lr", type=float, default=0.0001, help="learning rate")
+    parser.add_argument("--base_lr", type=float, default=0.003, help="learning rate")
     parser.add_argument(
         "--max_iter", type=int, default=3000, help="iterations per epoch"
     )
@@ -106,8 +108,12 @@ def main():  # sourcery skip: extract-method
     # parser.add_argument(
     #    "--num_classes", type=int, default=17, help="number of classes"
     # )
+    parser.add_argument("--patience", type=int, default=1000, help="early stopping")
     parser.add_argument(
         "--eval_period", type=int, default=100, help="after periods evaluate model"
+    )
+    parser.add_argument(
+        "--checkpoint_period", type=int, default=100, help="checkpoint after n periods"
     )
     parser.add_argument("--use_gpu", action="store_true", default=True, help="use gpu")
 
