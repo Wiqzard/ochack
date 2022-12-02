@@ -56,6 +56,8 @@ def setup(args):
     cfg.ignore_redundant = args.ingore_reduntant
     cfg.partion_single_assets = args.partion_single_assets
     cfg.area_threshold = args.area_threshold
+    cfg.root_path = args.root_path
+
     return cfg
 
 
