@@ -85,7 +85,7 @@ class Exp_Main:
     def do_train(self, resume=False):
         self.model.train()
         early_stopping = EarlyStopping(patience=self.cfg.patience, verbose=True)
-        if self.args.use_amp:
+        if self.cfg.use_amp:
             scaler = torch.cuda.amp.GradScaler()
 
         start_iter = (
@@ -102,7 +102,7 @@ class Exp_Main:
                 storage.step()
 
                 # loss_dict = self.model(data)
-                if self.args.use_amp:
+                if self.cfg.use_amp:
                     with torch.cuda.amp.autocast():
                         loss_dict = self.model(data)
                 else:
@@ -119,7 +119,7 @@ class Exp_Main:
                     storage.put_scalars(total_loss=losses_reduced, **loss_dict_reduced)
 
                 self.optimizer.zero_grad()
-                if self.args.use_amp:
+                if self.cfg.use_amp:
                     scaler.scale(losses).backward()
                     scaler.step(self.optimizer)
                     scaler.update()
@@ -162,7 +162,7 @@ def main(args):
     cfg = setup(args)
     exp = Exp_Main(cfg)
     logger.info(f"Model:\n{exp.model}")
-
+    os.makedirs("output", exist_ok=True)
     if args.is_training:
         distributed = comm.get_world_size() > 1
         if distributed:

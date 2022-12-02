@@ -19,5 +19,5 @@ python -u main.py \
     --eval_period 100 \
     --checkpoint_period 100 \
     --use_gpu
-
+    #--use_amp
     

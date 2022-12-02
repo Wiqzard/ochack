@@ -116,6 +116,12 @@ def main():  # sourcery skip: extract-method
         "--checkpoint_period", type=int, default=100, help="checkpoint after n periods"
     )
     parser.add_argument("--use_gpu", action="store_true", default=True, help="use gpu")
+    parser.add_argument(
+        "--use_amp",
+        action="store_true",
+        default=True,
+        help="use automatic mixed precision",
+    )
 
     args = parser.parse_args()
     args.use_gpu = bool(torch.cuda.is_available() and args.use_gpu)
