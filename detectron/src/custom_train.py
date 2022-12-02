@@ -10,6 +10,7 @@ from detectron2.checkpoint import DetectionCheckpointer, PeriodicCheckpointer
 from detectron2.config import get_cfg
 from detectron2.data import (
     MetadataCatalog,
+    DatasetCatalog,
     build_detection_test_loader,
     build_detection_train_loader,
 )
@@ -28,6 +29,8 @@ from detectron2.utils.events import (
     TensorboardXWriter,
 )
 from detectron.src.utils import setup, EarlyStopping
+from detectron.src.data_set import DataSet
+from detectron.src.constants import CLASSES
 
 logger = logging.getLogger("detectron2")
 
@@ -58,6 +61,17 @@ class Exp_Main:
             if comm.is_main_process()
             else []
         )
+        self.DatasetCatalog = DatasetCatalog
+        self.dataset = DataSet(cfg)
+        self._register_dataset()
+
+    def _register_dataset(self):
+        for d in ["train", "val"]:
+            logger.info(f">>>>>>> registering data_{d} >>>>>>> ")
+            self.DatasetCatalog.register(
+                f"data_{d}", lambda d=d: self.dataset.dataset_function(mode=d)
+            )
+            MetadataCatalog.get(f"data_{d}").set(thing_classes=CLASSES)
 
     def get_evaluator(self, cfg, dataset_name, output_folder=None):
         if output_folder is None:

@@ -52,6 +52,10 @@ def setup(args):
     cfg.writer_period = args.writer_period
     cfg.patience = args.patience
     cfg.use_amp = args.use_amp
+    cfg.ratio = args.ratio
+    cfg.ignore_redundant = args.ingore_reduntant
+    cfg.partion_single_assets = args.partion_single_assets
+    cfg.area_threshold = args.area_threshold
     return cfg
 
 
