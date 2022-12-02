@@ -66,6 +66,7 @@ class Exp_Main:
         self._register_dataset()
 
     def _register_dataset(self):
+        self.DatasetCatalog.clear()
         for d in ["train", "val"]:
             logger.info(f">>>>>>> registering data_{d} >>>>>>> ")
             self.DatasetCatalog.register(
