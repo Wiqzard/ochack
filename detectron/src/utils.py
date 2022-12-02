@@ -51,6 +51,7 @@ def setup(args):
 
     cfg.writer_period = args.writer_period
     cfg.patience = args.patience
+    cfg.use_amp = args.use_amp
     return cfg
 
 
