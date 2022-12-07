@@ -31,7 +31,9 @@ class DataSet:
                     label["Bottom"] + 1,
                 )
 
-                if check_bounding_box(self.args, (x1, y1, x2, y2), annotations):
+                if (
+                    True
+                ):  # check_bounding_box(self.args, (x1, y1, x2, y2), annotations):
                     object_id = CLASSES_DICT[str(label["ObjectClassName"])]
                     annotation = {
                         "bbox": [x1, y1, x2, y2],
