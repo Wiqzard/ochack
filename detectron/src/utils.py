@@ -35,7 +35,7 @@ def check_bounding_box(args, bbox, annotations):
         return True
 
     bboxes = [annotation["bbox"] for annotation in annotations]
-    print(bboxes)
+    # print(bboxes)
     for b in bboxes:
         ox1 = max(x1, b[0])
         oy1 = max(y1, b[1])
