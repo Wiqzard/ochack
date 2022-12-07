@@ -29,57 +29,57 @@ def check_bounding_box(args, bbox, annotations):
     if x1 == x2 or y1 == y2:
         return False
     if not (args.area_threshold_max > (x2 - x1) * (y2 - y1) > args.area_threshold_min):
-        print("area")
+        # print("area")
         return False
 
-    if len(annotations) == 0:
-        print("first")
-        return True
 
-    bboxes = [annotation["bbox"] for annotation in annotations]
-    # print(bboxes)
-    for b in bboxes:
-        # if b[0] < x1 < b[2] or b[0] < x2 < b[2] or b[1] < y1 < b[3] or b[1] < y2 < b[3]:
-        if (b[0] < x1 < b[2] or b[0] < x2 < b[2]) and (
-            b[1] < y1 < b[3] or b[1] < y2 < b[3]
-        ):
-            ox1 = max(x1, b[0])
-            oy1 = max(y1, b[1])
-            ox2 = min(x2, b[2])
-            oy2 = min(y2, b[3])
+#    if len(annotations) == 0:
+#        return True
 
-            width = max(0, ox2 - ox1)
-            height = max(0, oy2 - oy1)
-            overlap_area = height * width
+# bboxes = [annotation["bbox"] for annotation in annotations]
+# # print(bboxes)
+# for b in bboxes:
+#     # if b[0] < x1 < b[2] or b[0] < x2 < b[2] or b[1] < y1 < b[3] or b[1] < y2 < b[3]:
+#     if (b[0] < x1 < b[2] or b[0] < x2 < b[2]) and (
+#         b[1] < y1 < b[3] or b[1] < y2 < b[3]
+#     ):
+#         ox1 = max(x1, b[0])
+#         oy1 = max(y1, b[1])
+#         ox2 = min(x2, b[2])
+#         oy2 = min(y2, b[3])
 
-            total_area = (b[2] - b[0]) * (b[3] - b[1])
-            print(overlap_area)
-            print(total_area)
-            print(overlap_area / total_area)
-            if overlap_area / total_area < args.overlap_threshold:
-                print("overlap")
-                return True
-            else:
-                return False
-        else:
-            return True
-            # if ox1 < ox2 and oy1 < oy2:
-            #    overlap_area = (ox2 - ox1) * (oy2 - oy1)
-            #    total_area = (b[2] - b[0]) * (b[3] - b[1])
-            #    print(30 * "-")
-            #    print(b[0], b[1], b[2], b[3])
-            #    print(x1, y1, x2, y2)
+#         width = max(0, ox2 - ox1)
+#         height = max(0, oy2 - oy1)
+#         overlap_area = height * width
 
-            #    print(ox1, oy1, ox2, oy2)
-            #    print(overlap_area)
-            #    print(total_area)
-            #    print(overlap_area / total_area)
-            #    if overlap_area / total_area < args.overlap_threshold:
-            #        print("case")
-            #        return True
-            # else:
-            #    return True
-    return False
+#         total_area = (b[2] - b[0]) * (b[3] - b[1])
+#         print(overlap_area)
+#         print(total_area)
+#         print(overlap_area / total_area)
+#         if overlap_area / total_area < args.overlap_threshold:
+#             print("overlap")
+#             return True
+#         else:
+#             return False
+#     else:
+#         return True
+#         # if ox1 < ox2 and oy1 < oy2:
+#    overlap_area = (ox2 - ox1) * (oy2 - oy1)
+#    total_area = (b[2] - b[0]) * (b[3] - b[1])
+#    print(30 * "-")
+#    print(b[0], b[1], b[2], b[3])
+#    print(x1, y1, x2, y2)
+
+#    print(ox1, oy1, ox2, oy2)
+#    print(overlap_area)
+#    print(total_area)
+#    print(overlap_area / total_area)
+#    if overlap_area / total_area < args.overlap_threshold:
+#        print("case")
+#        return True
+# else:
+#    return True
+#  return False
 
 
 def setup(args):
