@@ -48,7 +48,7 @@ def check_bounding_box(args, bbox, annotations):
             print(b[0], b[1], b[2], b[3])
             print(x1, y1, x2, y2)
 
-            print(ox1, oy1, ox2, ox2)
+            print(ox1, oy1, ox2, oy2)
             print(overlap_area)
             print(total_area)
             print(overlap_area / total_area)
