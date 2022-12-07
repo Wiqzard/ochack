@@ -5,7 +5,7 @@ import os
 from detectron2.structures.boxes import BoxMode
 from detectron2.data import DatasetCatalog, MetadataCatalog
 
-from detectron.src.utils import falsy_path
+from detectron.src.utils import falsy_path, check_bounding_box
 from detectron.src.constants import CLASSES, CLASSES_DICT
 
 
@@ -19,35 +19,6 @@ class DataSet:
         ]
         self.DIRECTORY = os.path.join(args.root_path, "train")  # "eval"
 
-    def check_bounding_box(self, bbox, annotations, threshold):
-        x1, y1, x2, y2 = bbox
-
-        if x1 == x2 or y1 == y2:
-            return False
-
-        if not (
-            self.args.area_threshold_max
-            > (x2 - x1) * (y2 - y1)
-            > self.args.area_threshold_min
-        ):
-            return False
-
-        if len(annotations) == 0:
-            return True
-
-        bboxes = [annotation["bbox"] for annotation in annotations]
-        for b in bboxes:
-            x1 = max(x1, b[0])
-            y1 = max(y1, b[1])
-            x2 = min(x2, b[2])
-            y2 = min(y2, b[3])
-
-            overlap_area = (x2 - x1) * (y2 - y1)
-            total_area = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])
-            if overlap_area / total_area < threshold:
-                return True
-        return False
-
     def get_annotations(self, label_path: str) -> List[Dict]:
         with open(label_path, "rb") as json_file:
             labels = json.load(json_file)
@@ -59,12 +30,8 @@ class DataSet:
                     label["Right"] + 1,
                     label["Bottom"] + 1,
                 )
-                # if (
-                #    self.args.area_threshold_max
-                #    > (x2 - x1) * (y2 - y1)
-                #    > self.args.area_threshold_min
-                # ):
-                if self.check_bounding_box((x1, y1, x2, y2), annotations, 0.5):
+
+                if check_bounding_box((x1, y1, x2, y2), annotations):
                     object_id = CLASSES_DICT[str(label["ObjectClassName"])]
                     annotation = {
                         "bbox": [x1, y1, x2, y2],
