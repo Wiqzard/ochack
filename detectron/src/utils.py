@@ -40,21 +40,21 @@ def check_bounding_box(args, bbox, annotations):
         oy1 = min(y1, b[1])
         ox2 = min(x2, b[2])
         oy2 = max(y2, b[3])
-        if ox1 < ox2 and oy1 > oy2:
-            overlap_area = (ox2 - ox1) * (oy1 - oy2)
-            total_area = (bbox[2] - bbox[0]) * (bbox[1] - bbox[3])
-            print(30 * "-")
-            print(ox1)
-            print(oy1)
-            print(ox2)
-            print(oy2)
-            print(overlap_area)
-            print(total_area)
-            print(overlap_area / total_area)
-            if overlap_area / total_area < args.overlap_threshold:
-                return True
-        else:
+        # if ox1 < ox2 and oy1 > oy2:
+        overlap_area = (ox2 - ox1) * (oy1 - oy2)
+        total_area = (bbox[2] - bbox[0]) * (bbox[1] - bbox[3])
+        print(30 * "-")
+        print(ox1)
+        print(oy1)
+        print(ox2)
+        print(oy2)
+        print(overlap_area)
+        print(total_area)
+        print(overlap_area / total_area)
+        if overlap_area / total_area < args.overlap_threshold:
             return True
+        # else:
+        #    return True
     return False
 
 
