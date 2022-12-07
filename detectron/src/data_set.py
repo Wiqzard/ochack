@@ -24,7 +24,7 @@ class DataSet:
             labels = json.load(json_file)
             annotations = []
             for label in labels:
-                x1, y2, x2, y1 = (
+                x1, y1, x2, y2 = (
                     label["Left"] + 1,
                     label["Top"] + 1,
                     label["Right"] + 1,
