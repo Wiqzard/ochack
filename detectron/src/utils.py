@@ -28,7 +28,7 @@ def check_bounding_box(args, bbox, annotations):
 
     if x1 == x2 or y1 == y2:
         return False
-
+    print(x1, y1, x2, y2)
     if not (args.area_threshold_max > (x2 - x1) * (y1 - y2) > args.area_threshold_min):
         return False
 
