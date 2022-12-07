@@ -29,9 +29,11 @@ def check_bounding_box(args, bbox, annotations):
     if x1 == x2 or y1 == y2:
         return False
     if not (args.area_threshold_max > (x2 - x1) * (y2 - y1) > args.area_threshold_min):
+        print("area")
         return False
 
     if len(annotations) == 0:
+        print("first")
         return True
 
     bboxes = [annotation["bbox"] for annotation in annotations]
@@ -51,6 +53,7 @@ def check_bounding_box(args, bbox, annotations):
         print(total_area)
         print(overlap_area / total_area)
         if overlap_area / total_area < args.overlap_threshold:
+            print("overlap")
             return True
         # if ox1 < ox2 and oy1 < oy2:
         #    overlap_area = (ox2 - ox1) * (oy2 - oy1)
