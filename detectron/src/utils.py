@@ -44,6 +44,9 @@ def check_bounding_box(args, bbox, annotations):
 
         overlap_area = (x2 - x1) * (y2 - y1)
         total_area = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])
+        print(30 * "-")
+        print(overlap_area)
+        print(total_area)
         print(overlap_area / total_area)
         if overlap_area / total_area < args.overlap_threshold:
             return True
