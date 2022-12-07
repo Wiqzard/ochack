@@ -28,12 +28,12 @@ class DataSet:
         if x1 == x2 or y1 == y2:
             return False
 
-        if (
+        if not (
             self.args.area_threshold_max
             > (x2 - x1) * (y2 - y1)
             > self.args.area_threshold_min
         ):
-            return True
+            return False
 
         bboxes = [annotation["bbox"] for annotation in annotations]
         for b in bboxes:
