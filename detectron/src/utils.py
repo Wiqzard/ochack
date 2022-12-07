@@ -54,6 +54,8 @@ def check_bounding_box(args, bbox, annotations):
             print(overlap_area / total_area)
             if overlap_area / total_area < args.overlap_threshold:
                 return True
+        else:
+            return True
     return False
 
 
