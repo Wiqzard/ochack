@@ -63,7 +63,7 @@ def check_bounding_box(args, bbox, annotations):
             total_area = (b[2] - b[0]) * (b[3] - b[1])
             #         print(overlap_area)
             #         print(total_area)
-            #         print(overlap_area / total_area)
+            print(overlap_area / total_area)
             if overlap_area / total_area < args.overlap_threshold:
                 print("overlap")
                 return True
