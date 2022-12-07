@@ -25,6 +25,9 @@ class DataSet:
         if len(annotations) == 0:
             return True
 
+        if x1 == x2 or y1 == y2:
+            return False
+
         if (
             self.args.area_threshold_max
             > (x2 - x1) * (y2 - y1)
