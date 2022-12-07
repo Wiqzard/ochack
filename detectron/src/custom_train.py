@@ -112,6 +112,7 @@ class Exp_Main:
         data_loader = build_detection_train_loader(self.cfg)
         logger.info(f"Starting training from iteration {start_iter}")
         with EventStorage(start_iter) as storage:
+            # tqdm
             for data, iteration in zip(data_loader, range(start_iter, self.max_iter)):
                 iteration = iteration + 1
                 storage.step()

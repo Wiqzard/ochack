@@ -30,7 +30,11 @@ class DataSet:
                     label["Right"] + 1,
                     label["Bottom"] + 1,
                 )
-                if (x2 - x1) * (y2 - y1) > self.args.area_threshold:
+                if (
+                    self.args.area_threshold_max
+                    > (x2 - x1) * (y2 - y1)
+                    > self.args.area_threshold_min
+                ):
                     object_id = CLASSES_DICT[str(label["ObjectClassName"])]
                     annotation = {
                         "bbox": [x1, y1, x2, y2],
