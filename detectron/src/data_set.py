@@ -22,9 +22,6 @@ class DataSet:
     def check_bounding_box(self, bbox, annotations, threshold):
         x1, y1, x2, y2 = bbox
 
-        if len(annotations) == 0:
-            return True
-
         if x1 == x2 or y1 == y2:
             return False
 
@@ -34,6 +31,9 @@ class DataSet:
             > self.args.area_threshold_min
         ):
             return False
+
+        if len(annotations) == 0:
+            return True
 
         bboxes = [annotation["bbox"] for annotation in annotations]
         for b in bboxes:
