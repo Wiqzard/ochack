@@ -35,6 +35,7 @@ def check_bounding_box(args, bbox, annotations):
         return True
 
     bboxes = [annotation["bbox"] for annotation in annotations]
+    print(bboxes)
     for b in bboxes:
         ox1 = max(x1, b[0])
         oy1 = max(y1, b[1])
@@ -44,7 +45,7 @@ def check_bounding_box(args, bbox, annotations):
             overlap_area = (ox2 - ox1) * (oy2 - oy1)
             total_area = (b[2] - b[0]) * (b[3] - b[1])
             print(30 * "-")
-            print(bbox[0], bbox[1], bbox[2], bbox[3])
+            print(b[0], b[1], b[2], b[3])
             print(x1, y1, x2, y2)
 
             print(ox1, oy1, ox2, ox2)
