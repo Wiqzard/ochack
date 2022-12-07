@@ -45,7 +45,7 @@ def check_bounding_box(args, bbox, annotations):
         #     ):
         if (
             (b[0] < x1 < b[2] or b[0] < x2 < b[2])
-            or (x1 < b[0] < x2 or x1 < b[3] < 2)
+            or (x1 < b[0] < x2 or x1 < b[3] < x2)
             and (
                 (b[1] < y1 < b[3] or b[1] < y2 < b[3])
                 or (y1 < b[1] < y2 or y1 < b[3] < y2)
