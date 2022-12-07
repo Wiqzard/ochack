@@ -61,7 +61,7 @@ class DataSet:
                 #    > (x2 - x1) * (y2 - y1)
                 #    > self.args.area_threshold_min
                 # ):
-                if self.check_bounding_box((x1, y1, x2, y2), annotation, 0.5):
+                if self.check_bounding_box((x1, y1, x2, y2), annotations, 0.5):
                     object_id = CLASSES_DICT[str(label["ObjectClassName"])]
                     annotation = {
                         "bbox": [x1, y1, x2, y2],
