@@ -116,7 +116,7 @@ def setup(args):
 
     cfg.TEST.EVAL_PERIOD = args.eval_period
 
-    cfg.writer_period = args.writer_period
+    # cfg.writer_period = args.writer_period
     cfg.patience = args.patience
     cfg.use_amp = args.use_amp
     cfg.ratio = args.ratio
