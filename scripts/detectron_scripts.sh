@@ -16,7 +16,7 @@ python -u main.py \
     --ims_per_batch 2 \
     --base_lr 0.001 \
     --warmup_steps 1000\
-    --max_iter 200000\
+    --max_iter 100000\
     --batch_per_img 1024 \
     --use_gpu \
     --checkpoint_period 2000 \
