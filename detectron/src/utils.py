@@ -120,7 +120,7 @@ def setup(args):
     cfg.patience = args.patience
     cfg.use_amp = args.use_amp
     cfg.ratio = args.ratio
-    cfg.ignore_redundant = args.ignore_reduntant
+    cfg.ignore_redundant = args.ignore_redundant
     cfg.partion_single_assets = args.partion_single_assets
     cfg.area_threshold_min = args.area_threshold_max
     cfg.area_threshold_max = args.area_threshold_max
