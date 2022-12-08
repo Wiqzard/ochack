@@ -88,7 +88,7 @@ def main():  # sourcery skip: extract-method
     )
     parser.add_argument(
         "--partion_single_assets",
-        action=int,
+        type=int,
         default=1,
         help="only use every n'th image from single assets",
     )

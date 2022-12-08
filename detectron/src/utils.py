@@ -111,6 +111,7 @@ def setup(args):
     cfg.SOLVER.BASE_LR = args.base_lr
     cfg.SOLVER.MAX_ITER = args.max_iter
     cfg.SOLVER.CHECKPOINT_PERIOD = args.checkpoint_period
+
     cfg.SOLVER.AMP.ENABLED = args.use_amp
 
     cfg.TEST.EVAL_PERIOD = args.eval_period
