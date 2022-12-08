@@ -49,9 +49,9 @@ def main():  # sourcery skip: extract-method
         default=False,
         help="resume training from checkpoint",
     )
-    parser.add_argument(
-        "--writer_period", type=int, required=False, default=100, help="period to log"
-    )
+    # parser.add_argument(
+    #    "--writer_period", type=int, required=False, default=100, help="period to log"
+    # )
     #   <------------- data loader ------------->
     parser.add_argument(
         "--root_path",
@@ -67,18 +67,24 @@ def main():  # sourcery skip: extract-method
     )
     parser.add_argument(
         "--partion_single_assets",
-        action="store_true",
-        default=False,
+        action=int,
+        default=1,
         help="only use every n'th image from single assets",
     )
     parser.add_argument(
-        "--ratio", type=float, default=0.8, help="train-test split ratio"
+        "--ratio", type=float, default=0.95, help="train-test split ratio"
     )
     parser.add_argument(
-        "--area_threshold",
+        "--area_threshold_min",
         type=int,
         default=3000,
         help="sort out boxes with smaller area",
+    )
+    parser.add_argument(
+        "--area_threshold_max",
+        type=int,
+        default=700000,
+        help="sort out boxes with bigger area",
     )
 
     #   <------------- trainer ------------->
@@ -98,33 +104,31 @@ def main():  # sourcery skip: extract-method
         "--num_workers", type=int, default=4, help="dataloader number of workers"
     )
     parser.add_argument("--ims_per_batch", type=int, default=2, help="batch size")
-    parser.add_argument("--base_lr", type=float, default=0.003, help="learning rate")
+    parser.add_argument("--base_lr", type=float, default=0.002, help="learning rate")
     parser.add_argument(
-        "--max_iter", type=int, default=3000, help="iterations per epoch"
+        "--max_iter", type=int, default=200000, help="iterations per epoch"
     )
     parser.add_argument(
         "--batch_per_img", type=int, default=512, help="roi heads per image"
     )
-    # parser.add_argument(
-    #    "--num_classes", type=int, default=17, help="number of classes"
-    # )
     parser.add_argument("--patience", type=int, default=1000, help="early stopping")
     parser.add_argument(
-        "--eval_period", type=int, default=100, help="after periods evaluate model"
+        "--eval_period", type=int, default=5000, help="after periods evaluate model"
     )
     parser.add_argument(
-        "--checkpoint_period", type=int, default=100, help="checkpoint after n periods"
+        "--checkpoint_period", type=int, default=5000, help="checkpoint after n periods"
     )
     parser.add_argument("--use_gpu", action="store_true", default=True, help="use gpu")
     parser.add_argument(
         "--use_amp",
         action="store_true",
-        default=True,
         help="use automatic mixed precision",
     )
 
     args = parser.parse_args()
     args.use_gpu = bool(torch.cuda.is_available() and args.use_gpu)
+
+    # <--------------------------------------------------------->
 
     logger.info("Args in experiment:")
     logger.info(args)
@@ -134,6 +138,7 @@ def main():  # sourcery skip: extract-method
 
     if args.is_training:
         logger.info(f">>>>>>> start training : {args.model} >>>>>>>>>>>>>>>>>>>>>>>>>>")
+
         dataset = DataSet(args)
         for d in ["train", "val"]:
             logger.info(f">>>>>>> registering data_{d} >>>>>>> ")
@@ -143,6 +148,7 @@ def main():  # sourcery skip: extract-method
             MetadataCatalog.get(f"data_{d}").set(thing_classes=CLASSES)
 
         trainer = MyTrainer(cfg)
+        # trainer = DefaultTrainer(cfg)
         trainer.resume_or_load(resume=args.resume)
         trainer.train()
 

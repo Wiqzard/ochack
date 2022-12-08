@@ -4,20 +4,28 @@ python -u main.py \
     #--resume
     --root_path ./data/ \
     --ignore_redundant \
-    --writer_period 100 \
-    --partion_single_assets \
-    --ratio 0.9 \
-    --area_threshold 3000 \
+    --partion_single_assets 3\
+    --ratio 0.95 \
+    --area_threshold_min 6000 \
+    --area_threshold_max 700000 \
+
     --model "COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml" \
-    --patience 1000 \
+    --nms_threshold 0.1 \
     --num_workers 4 \
     --ims_per_batch 2 \
-    --base_lr 0.0001 \
-    --max_iter 3000 \
+    --gamma 0.1 \
+    --base_lr 0.001 \
+    --warmup_steps 1000\
+    --max_iter 200000\
     --batch_per_img 512 \
-    --patience 500 \ 
-    --eval_period 100 \
-    --checkpoint_period 100 \
-    --use_gpu
-    #--use_amp
-    
+    --use_gpu \
+    --use_amp \
+    --checkpoint_period 2000 \
+    --eval_period 5000 \
+
+
+    --writer_period 100 \
+    --patience 1000 \
+
+
+   

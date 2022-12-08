@@ -95,7 +95,7 @@ def setup(args):
     cfg.merge_from_file(model_zoo.get_config_file(args.model))
 
     cfg.DATASETS.TRAIN = ("data_train",)
-    cfg.DATASETS.TEST = ("data_val",)
+    cfg.DATASETS.TEST = ("data_val",)  # () if args.is_training else
     cfg.DATALOADER.NUM_WORKERS = args.num_workers
 
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
@@ -105,11 +105,13 @@ def setup(args):
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 17
     if not args.use_gpu:
         cfg.MODEL.DEVICE = "cpu"
+    cfg.MODEL.ROI_HEADS.NMS_THRESHOLD = args.nms_threshold
 
     cfg.SOLVER.IMS_PER_BATCH = args.ims_per_batch
     cfg.SOLVER.BASE_LR = args.base_lr
     cfg.SOLVER.MAX_ITER = args.max_iter
     cfg.SOLVER.CHECKPOINT_PERIOD = args.checkpoint_period
+    cfg.SOLVER.AMP.ENABLED = args.use_amp
 
     cfg.TEST.EVAL_PERIOD = args.eval_period
 
