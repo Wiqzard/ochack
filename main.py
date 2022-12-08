@@ -145,7 +145,10 @@ def main():  # sourcery skip: extract-method
         action="store_true",
         help="use automatic mixed precision",
     )
-
+    parser.add_argument("--warmup_steps", type=int, default=1000, help="warmup steps")
+    parser.add_argument(
+        "--gamma", type=float, default=0.1, help="learning rate reducer"
+    )
     args = parser.parse_args()
     args.use_gpu = bool(torch.cuda.is_available() and args.use_gpu)
 

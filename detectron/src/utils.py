@@ -105,13 +105,13 @@ def setup(args):
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 17
     if not args.use_gpu:
         cfg.MODEL.DEVICE = "cpu"
-    cfg.MODEL.ROI_HEADS.NMS_THRESHOLD = args.nms_threshold
+    # cfg.MODEL.ROI_HEADS.NMS_THRESHOLD = args.nms_threshold
 
     cfg.SOLVER.IMS_PER_BATCH = args.ims_per_batch
     cfg.SOLVER.BASE_LR = args.base_lr
     cfg.SOLVER.MAX_ITER = args.max_iter
     cfg.SOLVER.CHECKPOINT_PERIOD = args.checkpoint_period
-
+    cfg.SOLVER.WARMUP_ITERS = args.warmup_steps
     cfg.SOLVER.AMP.ENABLED = args.use_amp
 
     cfg.TEST.EVAL_PERIOD = args.eval_period

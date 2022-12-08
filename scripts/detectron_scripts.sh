@@ -2,6 +2,8 @@
 python -u main.py \
     --is_training True \
     --test False \
+    --register_data True \
+    --test False \
     --model_checkpoint "" \
     --root_path ./data/ \
     --ignore_redundant \
@@ -10,10 +12,8 @@ python -u main.py \
     --area_threshold_min 6000 \
     --area_threshold_max 700000 \
     --model "COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml" \
-    --nms_threshold 0.1 \
     --num_workers 4 \
     --ims_per_batch 2 \
-    --gamma 0.1 \
     --base_lr 0.001 \
     --warmup_steps 1000\
     --max_iter 200000\
@@ -25,6 +25,8 @@ python -u main.py \
     --use_amp \
 
 
+    --nms_threshold 0.1 \
+    --gamma 0.1 \
     --writer_period 100 \
     --patience 1000 \
 
