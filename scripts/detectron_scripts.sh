@@ -1,6 +1,8 @@
 
 python -u main.py \
     --is_training True \
+    --test False \
+    --model_checkpoint "" \
     #--resume
     --root_path ./data/ \
     --ignore_redundant \

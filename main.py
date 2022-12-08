@@ -14,6 +14,10 @@ from detectron2.engine import (
     hooks,
     launch,
 )
+from detectron2.engine import DefaultPredictor
+
+from detectron2.data import DatasetCatalog, MetadataCatalog, build_detection_test_loader
+from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2 import model_zoo
 from detectron2.data import DatasetCatalog, MetadataCatalog
 
@@ -42,6 +46,23 @@ def main():  # sourcery skip: extract-method
 
     parser.add_argument(
         "--is_training", type=bool, required=True, default=True, help="status"
+    )
+    parser.add_argument(
+        "--register_data",
+        type=bool,
+        required=True,
+        default=True,
+        help="register data for training and testing",
+    )
+    parser.add_argument(
+        "--test", type=bool, required=True, default=False, help="test on val data"
+    )
+    parser.add_argument(
+        "--model_checkpoint",
+        type=str,
+        required=False,
+        default="model_final.pth",
+        help="saved model to test",
     )
     parser.add_argument(
         "--resume",
@@ -136,9 +157,7 @@ def main():  # sourcery skip: extract-method
     cfg = setup(args)
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 
-    if args.is_training:
-        logger.info(f">>>>>>> start training : {args.model} >>>>>>>>>>>>>>>>>>>>>>>>>>")
-
+    if args.register_data:
         dataset = DataSet(args)
         for d in ["train", "val"]:
             logger.info(f">>>>>>> registering data_{d} >>>>>>> ")
@@ -147,10 +166,24 @@ def main():  # sourcery skip: extract-method
             )
             MetadataCatalog.get(f"data_{d}").set(thing_classes=CLASSES)
 
-        trainer = MyTrainer(cfg)
-        # trainer = DefaultTrainer(cfg)
+    if args.is_training:
+        logger.info(f">>>>>>> start training : {args.model} >>>>>>>>>>>>>>>>>>>>>>>>>>")
+
+        # trainer = MyTrainer(cfg)
+        trainer = DefaultTrainer(cfg)
         trainer.resume_or_load(resume=args.resume)
         trainer.train()
+
+    if args.test:
+        cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, args.model_checkpoint)
+        cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.85
+
+        predictor = DefaultPredictor(cfg)
+        evaluator = COCOEvaluator(
+            "my_dataset_test", cfg, False, output_dir="./output/inference/"
+        )
+        val_loader = build_detection_test_loader(cfg, "my_dataset_test")
+        inference_on_dataset(trainer.model, val_loader, evaluator)
 
 
 if __name__ == "__main__":
