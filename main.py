@@ -160,9 +160,6 @@ def main():  # sourcery skip: extract-method
     cfg = setup(args)
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 
-    trainer = DefaultTrainer(cfg)
-    trainer.resume_or_load(resume=args.resume)
-
     if args.register_data:
         dataset = DataSet(args)
         for d in ["train", "val"]:
@@ -171,6 +168,9 @@ def main():  # sourcery skip: extract-method
                 f"data_{d}", lambda d=d: dataset.dataset_function(mode=d)
             )
             MetadataCatalog.get(f"data_{d}").set(thing_classes=CLASSES)
+
+    trainer = DefaultTrainer(cfg)
+    trainer.resume_or_load(resume=args.resume)
 
     if args.is_training:
         logger.info(f">>>>>>> start training : {args.model} >>>>>>>>>>>>>>>>>>>>>>>>>>")
