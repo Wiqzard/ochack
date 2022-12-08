@@ -95,7 +95,9 @@ def setup(args):
     cfg.merge_from_file(model_zoo.get_config_file(args.model))
 
     cfg.DATASETS.TRAIN = ("data_train",)
-    cfg.DATASETS.TEST = ("data_val",)  # () if args.is_training else
+    cfg.DATASETS.TEST = (
+        () if args.is_training else ("data_val",)
+    )  # () if args.is_training else
     cfg.DATALOADER.NUM_WORKERS = args.num_workers
 
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
@@ -115,7 +117,7 @@ def setup(args):
     cfg.SOLVER.AMP.ENABLED = args.use_amp
     cfg.SOLVER.STEPS = (20000, 40000)
     cfg.SOLVER.GAMMA = 0.2
-    cfg.TEST.EVAL_PERIOD = args.eval_period
+    # cfg.TEST.EVAL_PERIOD = args.eval_period
 
     # cfg.writer_period = args.writer_period
     cfg.patience = args.patience
