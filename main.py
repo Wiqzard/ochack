@@ -160,6 +160,9 @@ def main():  # sourcery skip: extract-method
     cfg = setup(args)
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 
+    trainer = DefaultTrainer(cfg)
+    trainer.resume_or_load(resume=args.resume)
+
     if args.register_data:
         dataset = DataSet(args)
         for d in ["train", "val"]:
@@ -171,21 +174,19 @@ def main():  # sourcery skip: extract-method
 
     if args.is_training:
         logger.info(f">>>>>>> start training : {args.model} >>>>>>>>>>>>>>>>>>>>>>>>>>")
-
         # trainer = MyTrainer(cfg)
-        trainer = DefaultTrainer(cfg)
-        trainer.resume_or_load(resume=args.resume)
         trainer.train()
 
     if args.test:
+        logger.info(f">>>>>>> start testing: {args.model} >>>>>>>>>>>>>>>>>>>>>>>>>>")
         cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, args.model_checkpoint)
         cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.85
 
         predictor = DefaultPredictor(cfg)
         evaluator = COCOEvaluator(
-            "my_dataset_test", cfg, False, output_dir="./output/inference/"
+            "data_val", cfg, False, output_dir="./output/inference/"
         )
-        val_loader = build_detection_test_loader(cfg, "my_dataset_test")
+        val_loader = build_detection_test_loader(cfg, "data_val")
         inference_on_dataset(trainer.model, val_loader, evaluator)
 
 
