@@ -113,7 +113,7 @@ def setup(args):
     cfg.SOLVER.CHECKPOINT_PERIOD = args.checkpoint_period
     cfg.SOLVER.WARMUP_ITERS = args.warmup_steps
     cfg.SOLVER.AMP.ENABLED = args.use_amp
-
+    cfg.SOLVER.STEPS = (20000, 30000)
     cfg.TEST.EVAL_PERIOD = args.eval_period
 
     # cfg.writer_period = args.writer_period
