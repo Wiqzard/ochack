@@ -8,7 +8,7 @@ python -u main.py \
     --root_path ./data/ \
     --ignore_redundant \
     --partion_single_assets 3\
-    --ratio 0.95 \
+    --ratio 0.98 \
     --area_threshold_min 6000 \
     --area_threshold_max 700000 \
     --model "COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml" \
@@ -17,9 +17,11 @@ python -u main.py \
     --base_lr 0.001 \
     --warmup_steps 1000\
     --max_iter 100000\
-    --batch_per_img 1024 \
+    --batch_per_img 2048 \
     --use_gpu \
     --checkpoint_period 2000 \
+    --use_amp
+
     --eval_period 5000 \
   #--resume
     --use_amp \
