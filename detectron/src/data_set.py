@@ -12,11 +12,10 @@ from detectron.src.constants import CLASSES, CLASSES_DICT
 class DataSet:
     def __init__(self, args):
         self.args = args
-        self.redundant_directories = [
-            "SORDI_2022_h4020_warehouse",
-            "SORDI_2022_h4019_KLT stack",
-            "SORDI_2022_h4018_KLT on rack",
-        ]
+        self.redundant_directories = []
+        # "SORDI_2022_h4020_warehouse",
+        # "SORDI_2022_h4019_KLT stack",
+        # "SORDI_2022_h4018_KLT on rack",]
         self.DIRECTORY = os.path.join(args.root_path, "train")  # "eval"
 
     def get_annotations(self, label_path: str) -> List[Dict]:
@@ -70,8 +69,8 @@ class DataSet:
 
                     if (
                         dir == "SORDI_2022_Single_Assets"
-                        and idx % args.partion_single_assets != 0
-                    ):
+                        or dir == "SORDI_2022_Regensburg_plant"
+                    ) and idx % args.partion_single_assets != 0:
                         idx += 1
                         continue
                     image_name, label_name = image.split(".")[0], label.split(".")[0]

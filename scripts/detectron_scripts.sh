@@ -1,5 +1,6 @@
 
 python -u main.py \
+    --inference True \
     --is_training True \
     --test False \
     --register_data True \
@@ -21,6 +22,7 @@ python -u main.py \
     --use_gpu \
     --checkpoint_period 2000 \
     --use_amp
+    --resume
 
     --eval_period 5000 \
   #--resume

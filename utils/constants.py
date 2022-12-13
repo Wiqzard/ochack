@@ -18,6 +18,26 @@ CLASSES = {
     "cabinet": 16,
     "cardboard_box": 17,
 }
+CLASSES_RE = {
+    0: "__background__",
+    1: "stillage_close",
+    2: "stillage_open",
+    3: "l_klt_6147",
+    4: "l_klt_8210",
+    5: "l_klt_4147",
+    6: "pallet",
+    7: "jack",
+    8: "forklift",
+    9: "str",
+    10: "bicycle",
+    11: "dolly",
+    12: "exit_sign",
+    13: "fire_extinguisher",
+    14: "spring_post",
+    15: "locker",
+    16: "cabinet",
+    17: "cardboard_box",
+}
 CLASSES_ID = {
     1002: 0,
     1003: 1,
@@ -37,3 +57,4 @@ CLASSES_ID = {
     1040: 15,
     1070: 16,
 }
+CLASSES_ID_RE = {value: key for key, value in CLASSES_ID.items()}

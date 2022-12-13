@@ -6,9 +6,10 @@ import torch
 from torchvision.utils import draw_bounding_boxes
 from torchvision.transforms.functional import to_pil_image
 import pandas as pd
+from tqdm import tqdm
 
 # import cv2
-from utils.constants import CLASSES, CLASSES_ID
+from utils.constants import CLASSES, CLASSES_ID, CLASSES_RE, CLASSES_ID_RE
 import random
 import matplotlib.pyplot as plt
 
@@ -276,12 +277,14 @@ def write_to_csv(idx, image_name, image_width, image_height, label) -> None:
     num_predictions = label["labels"].shape[0]
     with open("src/output/" + "submission.csv", "a") as submission:
         csv_writer = csv.writer(submission, delimiter=",")
+        if num_predictions == 0:
+            csv.writer.writerow()
         for i in range(num_predictions):
             label_num = label["labels"][i].item()
             if label_num != 0:
                 idx += 1
                 object_class_id = CLASSES_ID.index(label_num)
-                object_class_name = CLASSES.index(label_num - 1)
+                object_class_name = CLASSES.index(label_num)
                 boxes = label["boxes"][i, :]
                 score = label["scores"][i].item()
 
@@ -303,8 +306,192 @@ def write_to_csv(idx, image_name, image_width, image_height, label) -> None:
     # print(type(img))
 
 
+import cv2
+from detectron2.data import DatasetCatalog, MetadataCatalog
+from detectron2.utils.visualizer import Visualizer
+
+
+def show_predictions(
+    predictor, dataset_name, path, num_predictions: int, save_path: str
+) -> None:
+    metadata = MetadataCatalog.get(dataset_name)
+    images, image_names = get_eval_images(path)
+    for idx in tqdm(
+        random.sample(list(range(len(images))), num_predictions),
+        total=num_predictions,
+        leave=True,
+    ):
+        image_id = images[idx]
+        im = cv2.imread(images[idx])
+        outputs = predictor(im)
+        v = Visualizer(im[:, :, ::-1], metadata=metadata, scale=0.8)
+        out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+        # file_path = os.path.join(save_path, f"prediction_{image_id}")
+        file_path = os.path.join(
+            "/Users/sebastian/Documents/Projects/sordi_ai/output/prediction_images",
+            f"prediction_{image_id}.jpg",
+        )
+        directory = os.path.dirname("output/prediction_images")
+        # if not os.path.exists(directory):
+        #   os.makedirs(directory)
+
+        #  if not cv2.imwrite(file_path, out.get_image()[:, :, ::-1]):
+        #     raise Exception("Could not save image")
+
+        cv2.imshow(str(image_id), out.get_image()[:, :, ::-1])
+
+        cv2.waitKey()
+
+
+def get_eval_images(path="data/eval/images"):
+    images, image_names = [], []
+    for image in sorted(os.listdir(path)):
+        if falsy_path(image):
+            continue
+        if image.startswith("."):
+            continue
+        image_path = os.path.join(path, image)
+        images.append(image_path)
+        image_names.append(image)
+    return images, image_names
+
+
+def predict_images(predictor, path) -> None:
+    idx = 0
+    images, image_names = get_eval_images(path=path)
+    with open("output/" + "submission.csv", "a+", newline="") as submission:
+        csv_writer = csv.writer(submission, delimiter=",")
+        entries = [
+            "detection_id",
+            "image_name",
+            "image_width",
+            "image_height",
+            "object_class_id",
+            "object_class_name",
+            "bbox_left",
+            "bbox_top",
+            "bbox_right",
+            "bbox_bottom",
+            "confidence",
+        ]
+        csv_writer.writerow(entries)
+    for image, image_name in tqdm(
+        zip(images, image_names), total=len(images), leave=True
+    ):
+        im = cv2.imread(image)
+        output = predictor(im)
+        (
+            num_instances,
+            image_height,
+            image_width,
+            pred_boxes,
+            scores,
+            pred_classes,
+        ) = transform_output(output)
+
+        idx = detectron_write_to_csv(
+            idx=idx,
+            image_name=image_name,
+            num_instances=num_instances,
+            image_width=image_width,
+            image_height=image_height,
+            pred_boxes=pred_boxes,
+            scores=scores,
+            pred_classes=pred_classes,
+        )
+
+
+def transform_output(output):
+    instance = output["instances"]
+
+    num_instances = len(instance)
+    image_height, image_width = instance.image_size
+    fields = instance.get_fields()
+    pred_boxes = fields["pred_boxes"].tensor.clone()  # Nx4 Boxes
+    scores = fields["scores"]  # Tensor
+    pred_classes = fields["pred_classes"]  # Tensor
+
+    assert (
+        num_instances == len(scores) == len(pred_classes) == len(pred_boxes)
+    ), "danger for missmatch"
+    return (
+        num_instances,
+        image_height,
+        image_width,
+        pred_boxes,
+        scores,
+        pred_classes,
+    )
+
+
+def detectron_write_to_csv(
+    idx,
+    image_name,
+    num_instances,
+    image_width,
+    image_height,
+    pred_boxes,
+    scores,
+    pred_classes,
+) -> int:
+    idx = idx
+    with open("output/" + "submission.csv", "a+", newline="") as submission:
+        csv_writer = csv.writer(submission, delimiter=",")
+        if num_instances == 0:
+            idx += 1
+            object_class_id = CLASSES_ID_RE[3]
+            object_class_name = CLASSES_RE[3 + 1]
+            row = {
+                "detection_id": idx,
+                "image_name": image_name,
+                "image_width": image_width,
+                "image_height": image_height,
+                "object_class_id": object_class_id,
+                "object_class_name": object_class_name,
+            }
+            csv_writer.writerow(row.values())
+
+        else:
+            for i in range(num_instances):
+                idx += 1
+                box = pred_boxes[i]
+                if check_area2(box=box, area_threshold=600):
+                    score = scores[i] * 100
+                    pred_class = pred_classes[i].item()
+                    object_class_id = CLASSES_ID_RE[pred_class]
+                    object_class_name = CLASSES_RE[
+                        pred_class + 1
+                    ]  # CLASSES.index(pred_class - 1)
+
+                    row = {
+                        "detection_id": idx,
+                        "image_name": image_name,
+                        "image_width": image_width,
+                        "image_height": image_height,
+                        "object_class_id": object_class_id,
+                        "object_class_name": object_class_name,
+                        "bbox_left": box[0].item(),
+                        "bbox_top": box[1].item(),
+                        "bbox_right": box[2].item(),
+                        "bbox_bottom": box[3].item(),
+                        "confidence": score.item(),
+                    }
+                    csv_writer.writerow(row.values())
+    return idx
+
+
 import os
 import json
+
+
+def check_area2(box, area_threshold):
+    x1, y1, x2, y2 = (
+        box[0],
+        box[1],
+        box[2],
+        box[3],
+    )
+    return (x2 - x1) * (y2 - y1) > area_threshold
 
 
 def check_area(label_path: str, area_threshold: float) -> bool:

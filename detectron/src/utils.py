@@ -93,7 +93,7 @@ def setup(args):
     """
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(args.model))
-
+    cfg.OUTPUT_DIR = "output"
     cfg.DATASETS.TRAIN = ("data_train",)
     cfg.DATASETS.TEST = (
         () if args.is_training else ("data_val",)
@@ -118,7 +118,7 @@ def setup(args):
     cfg.SOLVER.STEPS = (60000,)
     cfg.SOLVER.GAMMA = 0.1
     # cfg.TEST.EVAL_PERIOD = args.eval_period
-
+    cfg.TEST.DETECTIONS_PER_IMAGE = 1000
     # cfg.writer_period = args.writer_period
     cfg.patience = args.patience
     cfg.use_amp = args.use_amp

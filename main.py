@@ -58,6 +58,13 @@ def main():  # sourcery skip: extract-method
         "--test", type=bool, required=True, default=False, help="test on val data"
     )
     parser.add_argument(
+        "--inference",
+        type=bool,
+        required=False,
+        default=False,
+        help="make submission and plot imagesj",
+    )
+    parser.add_argument(
         "--model_checkpoint",
         type=str,
         required=False,
@@ -160,34 +167,67 @@ def main():  # sourcery skip: extract-method
     cfg = setup(args)
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 
-    if args.register_data:
+    # if args.register_data:
+    # dataset = DataSet(args)
+    # for d in ["train", "val"]:
+    # logger.info(f">>>>>>> registering data_{d} >>>>>>> ")
+    # DatasetCatalog.register(
+    # f"data_{d}", lambda d=d: dataset.dataset_function(mode=d)
+    # )
+    # MetadataCatalog.get(f"data_{d}").set(thing_classes=CLASSES)
+
+    #    trainer = DefaultTrainer(cfg)
+    #
+    #    trainer.resume_or_load(resume=args.resume)
+
+    #    if args.is_training:
+    #        logger.info(f">>>>>>> start training : {args.model} >>>>>>>>>>>>>>>>>>>>>>>>>>")
+    #        # trainer = MyTrainer(cfg)
+    #        trainer.train()
+    #
+    #    if args.test:
+    #        logger.info(f">>>>>>> start testing: {args.model} >>>>>>>>>>>>>>>>>>>>>>>>>>")
+    #        cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, args.model_checkpoint)
+    #        cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.85
+    #
+    #        predictor = DefaultPredictor(cfg)
+    #        evaluator = COCOEvaluator(
+    #            "data_val", cfg, False, output_dir="./output/inference/"
+    #        )
+    #        val_loader = build_detection_test_loader(cfg, "data_val")
+    #        inference_on_dataset(trainer.model, val_loader, evaluator)
+
+    if args.inference:
+        logger.info(">>>>>>> registering data_val >>>>>>> ")
         dataset = DataSet(args)
-        for d in ["train", "val"]:
-            logger.info(f">>>>>>> registering data_{d} >>>>>>> ")
-            DatasetCatalog.register(
-                f"data_{d}", lambda d=d: dataset.dataset_function(mode=d)
-            )
-            MetadataCatalog.get(f"data_{d}").set(thing_classes=CLASSES)
-
-    trainer = DefaultTrainer(cfg)
-    trainer.resume_or_load(resume=args.resume)
-
-    if args.is_training:
-        logger.info(f">>>>>>> start training : {args.model} >>>>>>>>>>>>>>>>>>>>>>>>>>")
-        # trainer = MyTrainer(cfg)
-        trainer.train()
-
-    if args.test:
-        logger.info(f">>>>>>> start testing: {args.model} >>>>>>>>>>>>>>>>>>>>>>>>>>")
-        cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, args.model_checkpoint)
-        cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.85
-
-        predictor = DefaultPredictor(cfg)
-        evaluator = COCOEvaluator(
-            "data_val", cfg, False, output_dir="./output/inference/"
+        d = "val"
+        DatasetCatalog.register(
+            "data_val", lambda d=d: dataset.dataset_function(mode=d)
         )
-        val_loader = build_detection_test_loader(cfg, "data_val")
-        inference_on_dataset(trainer.model, val_loader, evaluator)
+        MetadataCatalog.get("data_val").set(thing_classes=CLASSES)
+
+        cfg.MODEL.WEIGHTS = "trained_models/trained_model_model_final.pth"  # os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
+        cfg.DATASETS.TEST = ("data_val",)
+        cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = (
+            0.45  # set the testing threshold for this model
+        )
+        cfg.TEST.DETECTIONS_PER_IMAGE = 1000
+        predictor = DefaultPredictor(cfg)
+        test_metadata = MetadataCatalog.get("data_val")
+        dataset_dicts = DatasetCatalog.get("data_val")
+
+        from utils.tools import predict_images, show_predictions
+
+        # predict_images(predictor=predictor, path="data/eval/images")
+        save_path = os.path.join(cfg.OUTPUT_DIR, "prediction_images")
+        print("MAKE IMAGES")
+        show_predictions(
+            predictor=predictor,
+            dataset_name="data_val",
+            path="data/eval/images",
+            num_predictions=10,
+            save_path=save_path,
+        )
 
 
 if __name__ == "__main__":

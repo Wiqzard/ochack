@@ -5,6 +5,7 @@ data/
 **/.DS_Store
 checkpoints/
 output/
+trained_model/
 # C extensions
 *.so
 .vscode/
