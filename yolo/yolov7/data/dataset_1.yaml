@@ -1,6 +1,0 @@
-train: datasets/dataset_1/train/images
-val: datasets/dataset_1/eval/images
-#test:
-
-nc: 5
-names: [ 'l_klt_4147', 'l_klt_6147', 'l_klt_8210', 'stillage_close', 'stillage_open']
