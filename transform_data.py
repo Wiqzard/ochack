@@ -51,36 +51,70 @@ CLASSES_RE = {
 models = {1: [1, 2, 3, 4, 5], 2: [6, 15, 16, 17, 9, 8], 3: [7, 10, 11, 12, 13, 14]}
 model_classes = {
     1: {
-        0: "stillage_close",
-        1: "stillage_open",
-        2: "l_klt_6147",
-        3: "l_klt_8210",
-        4: "l_klt_4147",
+        0: "l_klt_4147",
+        1: "l_klt_6147",
+        2: "l_klt_8210",
+        3: "stillage_close",
+        4: "stillage_open",
     },
     2: {
         0: "pallet",
-        1: "locker",
-        2: "cabinet",
-        3: "cardboard_box",
-        4: "str",
-        5: "forklift",
+        1: "cabinet",
+        2: "cardboard_box",
+        3: "locker",
+        4: "forklift",
+        5: "str",
     },
     3: {
-        0: "jack",
-        1: "bicycle",
-        2: "dolly",
-        3: "exit_sign",
-        4: "fire_extinguisher",
+        0: "bicycle",
+        1: "dolly",
+        2: "exit_sign",
+        3: "fire_extinguisher",
+        4: "jack",
         5: "spring_post",
     },
 }
+
+# model_classes = {
+#    1: {
+#        3: "stillage_close",
+#        4: "stillage_open",
+#        1: "l_klt_6147",
+#        2: "l_klt_8210",
+#        0: "l_klt_4147",
+#    }[ 'l_klt_4147', 'l_klt_6147', 'l_klt_8210', 'stillage_close', 'stillage_open'],
+#    2: {
+#        0: "pallet",
+#        3: "locker",
+#        1: "cabinet",
+#        2: "cardboard_box",
+#        5: "str",
+#        4: "forklift",
+#    }[ 'pallet', 'cabinet', 'cardboard_box', 'locker', 'forklift','str'],
+#    3: {
+#        4: "jack",
+#        0: "bicycle",
+#        1: "dolly",
+#        2: "exit_sign",
+#        3: "fire_extinguisher",
+#        5: "spring_post",
+#    }['bicycle', 'dolly', 'exit_sign', 'fire_extinguisher', 'jack', 'spring_post'],
+# }
 reversed_model_classes = {
     model_num: {value: key for key, value in classes.items()}
     for model_num, classes in model_classes.items()
 }
+class_name_to_id = {v: k for (k, v) in zip(CLASSES_ID.keys(), CLASSES_RE.values())}
 
 
 def falsy_path(directory: str) -> bool:
+    """
+    If the directory starts with a dot, ends with json, or ends with zip, then it's a falsy path
+
+    :param directory: str
+    :type directory: str
+    :return: A boolean value.
+    """
     return bool(
         (
             directory.startswith(".")
