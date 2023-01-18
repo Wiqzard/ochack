@@ -5,101 +5,19 @@ from typing import List, Dict
 import shutil
 from tqdm import tqdm
 import argparse
-
+from utils.constants import *
 # if ran from on directory up
 
 
-CLASSES_ID = {
-    1002: 1,
-    1003: 2,
-    1012: 3,
-    1013: 4,
-    1011: 5,
-    1100: 6,
-    1120: 7,
-    2010: 8,
-    2050: 9,
-    2000: 10,
-    1110: 11,
-    4000: 12,
-    5010: 13,
-    1135: 14,
-    1030: 15,
-    1040: 16,
-    1070: 17,
-}
-CLASSES_ID_RE = {value: key for key, value in CLASSES_ID.items()}
-CLASSES_RE = {
-    1: "stillage_close",
-    2: "stillage_open",
-    3: "l_klt_6147",
-    4: "l_klt_8210",
-    5: "l_klt_4147",
-    6: "pallet",
-    7: "jack",
-    8: "forklift",
-    9: "str",
-    10: "bicycle",
-    11: "dolly",
-    12: "exit_sign",
-    13: "fire_extinguisher",
-    14: "spring_post",
-    15: "locker",
-    16: "cabinet",
-    17: "cardboard_box",
-}
-models = {1: [1, 2, 3, 4, 5], 2: [6, 15, 16, 17, 9, 8], 3: [7, 10, 11, 12, 13, 14]}
-model_classes = {
-    1: {
-        0: "l_klt_4147",
-        1: "l_klt_6147",
-        2: "l_klt_8210",
-        3: "stillage_close",
-        4: "stillage_open",
-    },
-    2: {
-        0: "pallet",
-        1: "cabinet",
-        2: "cardboard_box",
-        3: "locker",
-        4: "forklift",
-        5: "str",
-    },
-    3: {
-        0: "bicycle",
-        1: "dolly",
-        2: "exit_sign",
-        3: "fire_extinguisher",
-        4: "jack",
-        5: "spring_post",
-    },
-}
 
-# model_classes = {
-#    1: {
-#        3: "stillage_close",
-#        4: "stillage_open",
-#        1: "l_klt_6147",
-#        2: "l_klt_8210",
-#        0: "l_klt_4147",
-#    }[ 'l_klt_4147', 'l_klt_6147', 'l_klt_8210', 'stillage_close', 'stillage_open'],
-#    2: {
-#        0: "pallet",
-#        3: "locker",
-#        1: "cabinet",
-#        2: "cardboard_box",
-#        5: "str",
-#        4: "forklift",
-#    }[ 'pallet', 'cabinet', 'cardboard_box', 'locker', 'forklift','str'],
-#    3: {
-#        4: "jack",
-#        0: "bicycle",
-#        1: "dolly",
-#        2: "exit_sign",
-#        3: "fire_extinguisher",
-#        5: "spring_post",
-#    }['bicycle', 'dolly', 'exit_sign', 'fire_extinguisher', 'jack', 'spring_post'],
-# }
+CLASS_NAMES = ["klt_box_empty", "klt_box_full", "rack_1", "rack_2", "rack_3"]
+CLASS_IDS = [1008, 1009, 1200, 1205, 1210]
+CLASSES = dict(zip(CLASS_NAMES, CLASS_IDS))
+CLASSES_ID = {ID : i for i, ID in enumerate(CLASS_IDS)}
+CLASSES_ID_RE = {value: key for key, value in CLASSES_ID.items()}
+CLASSES_RE = {value: key for key, value in CLASSES.items()}
+
+
 reversed_model_classes = {
     model_num: {value: key for key, value in classes.items()}
     for model_num, classes in model_classes.items()
@@ -152,25 +70,45 @@ def make_dataset(
     Put image in train, label as txt in label"""
 
     # root_path/data/train or eval
-    source_path = os.path.join(root_path, mode)
+    
+    ######################## STAGE 1
+#    source_path = os.path.join(root_path, mode)
+    source_path = root_path
+    ########################
 
     # target_path/dataset_1,2,3/train, eval
     assert mode in {"train", "eval"}, "specified mode does not exist"
     model_path = f"dataset_{model}"
-    destination_path = os.path.join(target_path, model_path)
-    destination_path = os.path.join(destination_path, mode)
+    ########################
+    #destination_path = os.path.join(target_path, model_path)
+    #destination_path = os.path.join(destination_path, mode)
+    ########################
+    destination_path = target_path
     os.makedirs(destination_path, exist_ok=True)
     # target_path/dataset_1/train/images, labels
-    images_destination_path = os.path.join(destination_path, "images")
-    labels_destination_path = os.path.join(destination_path, "labels")
-    os.makedirs(images_destination_path, exist_ok=True)
-    os.makedirs(labels_destination_path, exist_ok=True)
+
+    train_images_destination_path = os.path.join(destination_path, "train",  "images")
+    train_labels_destination_path = os.path.join(destination_path, "train", "labels")
+
+    val_images_destination_path = os.path.join(destination_path, "val",  "images")
+    val_labels_destination_path = os.path.join(destination_path, "val", "labels")
+
+    os.makedirs(train_images_destination_path, exist_ok=True)
+    os.makedirs(train_labels_destination_path, exist_ok=True)
+
+    os.makedirs(val_images_destination_path, exist_ok=True)
+    os.makedirs(val_labels_destination_path, exist_ok=True)
+
 
     if mode == "eval":
-        make_eval_dataset(
-            source_path, model, images_destination_path, labels_destination_path
-        )
-
+        
+        #make_eval_dataset(
+        #    "data/Small_Evaluation_Dataset", model, val_images_destination_path, val_labels_destination_path
+        #)
+##        make_eval_dataset(
+#            source_path, model, images_destination_path, labels_destination_path
+#        )
+        make_train_dataset(source_path, partition_assets=False, area_min=0, area_max=999999999, model=model, images_destination_path=val_images_destination_path, labels_destination_path=val_labels_destination_path)
     else:
         make_train_dataset(
             source_path,
@@ -178,8 +116,8 @@ def make_dataset(
             area_min,
             area_max,
             model,
-            images_destination_path,
-            labels_destination_path,
+            train_images_destination_path,
+            train_labels_destination_path,
         )
 
 
@@ -234,64 +172,66 @@ def make_train_dataset(
 ):
     idx = 1
     step = 1
-    for dir in os.listdir(source_path):
-        # dir Single_Assets Plant etc..
-        if falsy_path(directory=dir):
+    #for dir in os.listdir(source_path):
+    #    # dir Single_Assets Plant etc..
+    #    if falsy_path(directory=dir):
+    #        continue
+    #    path_to_data_part = os.path.join(source_path, dir)
+    #    print(dir)
+    path_to_data_part = source_path
+    for directory in sorted(os.listdir(path_to_data_part)):
+        # Bicycle etc.
+        if falsy_path(directory=directory):
             continue
-        path_to_data_part = os.path.join(source_path, dir)
 
-        for directory in sorted(os.listdir(path_to_data_part)):
-            # Bicycle etc.
-            if falsy_path(directory=directory):
+        print(directory)
+        directory = os.fsdecode(directory)
+        # images, labels
+        images_path = os.path.join(path_to_data_part, directory, "images")
+        labels_path = os.path.join(path_to_data_part, directory, "labels/json")
+        print(images_path)
+        images_paths = sorted(os.listdir(images_path))
+        labels_paths = sorted(os.listdir(labels_path))
+
+        for image, label in zip(images_paths, labels_paths):
+
+            if image.startswith(".") or label.startswith("."):
                 continue
+            if (
+                dir in ["SORDI_2022_Single_Assets", "SORDI_2022_Regensburg_plant"]
+                and step % partition_assets != 0
+            ):
+                step += 1
+                continue
+            image_name, label_name = image.split(".")[0], label.split(".")[0]
 
-            directory = os.fsdecode(directory)
-            # images, labels
-            images_path = os.path.join(path_to_data_part, directory, "images")
-            labels_path = os.path.join(path_to_data_part, directory, "labels/json")
+            if image_name == label_name:
+                #                    label = os.path.join((idx))
+                image_path = os.path.join(images_path, image)
+                label_path = os.path.join(labels_path, label)
 
-            images_paths = sorted(os.listdir(images_path))
-            labels_paths = sorted(os.listdir(labels_path))
-
-            for image, label in zip(images_paths, labels_paths):
-
-                if image.startswith(".") or label.startswith("."):
+                annotations = get_annotations(label_path, model, area_min, area_max)
+                if len(annotations) == 0:
                     continue
-                if (
-                    dir in ["SORDI_2022_Single_Assets", "SORDI_2022_Regensburg_plant"]
-                    and step % partition_assets != 0
-                ):
-                    step += 1
-                    continue
-                image_name, label_name = image.split(".")[0], label.split(".")[0]
-
-                if image_name == label_name:
-                    #                    label = os.path.join((idx))
-                    image_path = os.path.join(images_path, image)
-                    label_path = os.path.join(labels_path, label)
-
-                    annotations = get_annotations(label_path, model, area_min, area_max)
-                    if len(annotations) == 0:
-                        continue
-                    image_destination_path = os.path.join(
-                        images_destination_path, f"{str(idx)}.jpg"
-                    )
-                    label_destination_path = os.path.join(
-                        labels_destination_path, f"{str(idx)}.txt"
-                    )
-                    if not os.path.exists(image_destination_path):
-                        shutil.copy(image_path, image_destination_path)
-                    write_labels(annotations, label_destination_path)
-                    idx += 1
-                    step += 1
+                image_destination_path = os.path.join(
+                    images_destination_path, f"{str(idx)}.jpg"
+                )
+                label_destination_path = os.path.join(
+                    labels_destination_path, f"{str(idx)}.txt"
+                )
+                if not os.path.exists(image_destination_path):
+                    shutil.copy(image_path, image_destination_path)
+                write_labels(annotations, label_destination_path)
+                idx += 1
+                step += 1
 
 
 def make_eval_dataset(
     source_path, model, images_destination_path, labels_destination_path
 ):
     idx = 1
-    images_path = os.path.join(source_path, "images")
-    labels_path = os.path.join(source_path, "labels")
+    images_path = os.path.join(source_path, "dataset", "images")
+    labels_path = os.path.join(source_path, "dataset", "labels", "json")
 
     images_paths = sorted(os.listdir(images_path))
     labels_paths = sorted(os.listdir(labels_path))
@@ -311,11 +251,13 @@ def make_eval_dataset(
         label_destination_path = os.path.join(
             labels_destination_path, f"{str(idx)}.txt"
         )
-        if not delete_rows(label_path, label_destination_path, model):
-            continue
+#        if not delete_rows(label_path, label_destination_path, model):
+#            continue
 
         if not os.path.exists(os.path.join(image_destination_path)):
             shutil.copy(image_path, image_destination_path)
+        if not os.path.exists(os.path.join(label_destination_path)):
+            shutil.copy(label_path, label_destination_path)        
         idx += 1
 
 
@@ -363,7 +305,7 @@ def write_labels(annotations, label_destination_path):
 
 def make_all_datasets(args):
     modes = ["train", "eval"]
-    with tqdm(total=6, leave=True) as pbar:
+    with tqdm(total=1, leave=True) as pbar:
         for model, mode in itertools.product(models.keys(), modes):
             make_dataset(
                 args.source,
@@ -414,7 +356,7 @@ def main():
         "--partition_assets",
         type=int,
         required=False,
-        default=2,
+        default=1,
         help="The number of partitioned assets",
     )
 
